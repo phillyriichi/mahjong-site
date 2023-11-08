@@ -231,3 +231,43 @@ header.masthead {
   margin-top: 100px;
 }
 
+.page-footer a:visited {
+  color: inherit;
+}
+
+a:hover .page-footer-text {
+  text-decoration: underline;
+}
+
+.blog-text {
+  max-width: 600px !important;
+}
+
+.blog-footer {
+  margin-top: 20px !important;
+}
+
+.post-container {
+  max-width: 800px;
+  margin-top: 60px;
+}
+
+.post-title {
+  text-align: left;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.post-div a {
+  text-decoration: none;
+  color: #212529;
+}
+
+.post-div h2 {
+  font-weight: bold;
+}
+
+.blog-text {
+  color: black;
+}
+
