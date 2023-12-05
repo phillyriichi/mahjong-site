@@ -284,3 +284,31 @@ a:hover .page-footer-text {
   color: #0085a1;
 }
 
+iframe {
+}
+
+.tourney-header {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+h1, .h1, header {
+  font-size: calc(36px + 1vw);
+}
+
+@media screen and (min-width:1600px) {
+  h1, .h1 {
+    font-size: 80px;
+  }
+}
+
+.clean-navbar .logo {
+  font-size: calc(10px + 1vw);
+}
+
+@media screen and (min-width: 1600px) {
+  .clean-navbar .logo {
+    font-size: 1.5rem;
+  }
+}
+
