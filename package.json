@@ -1,0 +1,43 @@
+{
+  "name": "mahjong-site",
+  "version": "1.0.0",
+  "description": "Philly Mahjong Club Website",
+  "type": "module",
+  "scripts": {
+    "start": "cross-env NODE_ENV=development DEBUG=@metalsmith* node ./metalsmith/metalsmith.js",
+    "build": "cross-env NODE_ENV=production node ./metalsmith/metalsmith.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phillyriichi/mahjong-site.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/phillyriichi/mahjong-site/issues"
+  },
+  "homepage": "https://github.com/phillyriichi/mahjong-site#readme",
+  "devDependencies": {
+    "browser-sync": "^3.0.2",
+    "chokidar": "^3.5.3",
+    "cross-env": "^7.0.3"
+  },
+  "dependencies": {
+    "@metalsmith/collections": "^1.3.0",
+    "@metalsmith/layouts": "^2.7.0",
+    "@metalsmith/markdown": "^1.10.0",
+    "@metalsmith/metadata": "^0.3.0",
+    "@metalsmith/permalinks": "^3.0.1",
+    "jstransformer-nunjucks": "^1.2.0",
+    "marked": "^11.2.0",
+    "metalsmith": "^2.6.2",
+    "metalsmith-debug-ui": "^0.3.2",
+    "metalsmith-html-minifier": "^4.0.1",
+    "metalsmith-if": "^0.1.1",
+    "metalsmith-metadata": "^0.0.4",
+    "metalsmith-static-files": "^0.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
