@@ -1,0 +1,14 @@
+{% extends "bootstrap-static-news-layout.njk" %}
+
+{% block body %}
+    {% for newsPost in collections.news %}
+      <div class="post-div"><a href="/{{ newsPost.permalink }}">
+              <h2 class="post-title">{{ newsPost.newsTitle }}</h2>
+              <p class="text-start blog-text blog-footer">
+                <time datetime="{{ newsPost.date }}">{{ newsPost.date | newsDate }}</time>
+              </p>
+          </a></div>
+      <hr>
+    {% endfor %}
+   
+{% endblock %}

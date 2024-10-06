@@ -1,0 +1,22 @@
+{% extends "bootstrap-static-news-post-layout.njk" %}
+
+{% block body %}
+  <div class="block-heading">
+      <nav>
+          <ul class="pagination">
+              {% if previous %}
+                <li class="page-item"><a class="page-link" aria-label="Previous" href="/{{ previous.permalink }}"><span aria-hidden="true">« {{ previous.newsTitle }}</span></a></li>
+              {% endif %}
+              {% if next %}
+                <li class="page-item"><a class="page-link" aria-label="Next" href="/{{ next.permalink }}"><span aria-hidden="true">{{ next.newsTitle }} »</span></a></li>
+              {% endif %}
+          </ul>
+      </nav>
+      <h2 class="text-info">{{ newsTitle }}</h2>
+      {% if image %}
+        <img class="img-thumbnail" src="{{ image }}" style="margin-bottom: 20px;">
+      {% endif %}
+      {{ contents | safe }}
+      <p class="text-start blog-text blog-footer">Posted <time datetime="{{ date }}">{{ date | newsDate }}</time></p>
+  </div>
+{% endblock %}

@@ -4,8 +4,8 @@
   "description": "Philly Mahjong Club Website",
   "type": "module",
   "scripts": {
-    "start": "cross-env NODE_ENV=development DEBUG=@metalsmith* node ./metalsmith/metalsmith.js",
-    "build": "cross-env NODE_ENV=production node ./metalsmith/metalsmith.js"
+    "start": "cross-env NODE_ENV=development DEBUG=@metalsmith* node ./metalsmith.js",
+    "build": "cross-env NODE_ENV=production node ./metalsmith.js"
   },
   "repository": {
     "type": "git",
