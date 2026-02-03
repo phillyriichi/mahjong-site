@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@plugin '../hero.ts';
+@source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+@custom-variant dark (&:is(.dark *));
+
+/* https://colorkit.co/color/e63030/ */
+@theme {
+  --color-background-primary: #ffedea;
+  --color-background-secondary: #ffc8c1;
+
+  --color-copy-primary: #2a2727;
+  --color-copy-secondary: #2a2120;
+
+  --color-link-secondary: #5f7c80;
+
+  --color-background-brand-primary: #e63030;
+  --color-background-brand-secondary: #bb2727;
+
+  --color-copy-brand-primary: #ffdad5;
+  --color-copy-brand-secondary: #ffb6ad;
+
+  --color-header-primary: #3079e6;
+  --color-header-secondary: #343a48;
+
+  --color-border-primary: #bb2727;
+}
