@@ -13,7 +13,7 @@ import {
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Link } from 'wouter'
-import { PHILEAGUE_SPA_ROUTES, SPA_ROUTES, STANDALONE_ROUTES } from '../route-paths'
+import { PHILEAGUE_SPA_ROUTES, SPA_ROUTES } from '../route-paths'
 
 const phileaguePages = [
   {
@@ -115,7 +115,7 @@ const NavBar = () => {
             Gallery
           </Link>
           <a
-            href={STANDALONE_ROUTES.CONTACT_US}
+            href={SPA_ROUTES.CONTACT_US}
             className="text-lg font-semibold text-copy-brand-primary"
           >
             Contact
@@ -180,7 +180,7 @@ const NavBar = () => {
                   Gallery
                 </Link>
                 <a
-                  href={STANDALONE_ROUTES.CONTACT_US}
+                  href={SPA_ROUTES.CONTACT_US}
                   className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-copy-brand-primary hover:bg-white/5"
                 >
                   Contact
