@@ -69,7 +69,7 @@ const NavBar = () => {
           </button>
         </div>
         <PopoverGroup className="hidden lg:flex lg:gap-x-12">
-          <Link href="/" className="text-lg font-semibold text-copy-brand-primary">
+          <Link href={SPA_ROUTES.HOME} className="text-lg font-semibold text-copy-brand-primary">
             Home
           </Link>
 
