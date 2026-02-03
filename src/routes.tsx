@@ -11,11 +11,11 @@ import Gallery from './features/gallery'
 import Events from './features/events'
 import OldCity from './features/locations/old-city'
 import Kop from './features/locations/kop'
-import { PHILEAGUE_SPA_ROUTES, SPA_ROUTES, STANDALONE_ROUTES } from './route-paths'
+import { PHILEAGUE_SPA_ROUTES, SPA_ROUTES } from './route-paths'
 
 const Routes = () => (
   <Switch>
-    <Route path={STANDALONE_ROUTES.CONTACT_US} component={ContactUs} />
+    <Route path={SPA_ROUTES.CONTACT_US} component={ContactUs} />
     <Route path={SPA_ROUTES.GALLERY} component={Gallery} />
     <Route path={SPA_ROUTES.EVENTS} component={Events} />
     <Route path={SPA_ROUTES.OLD_CITY} component={OldCity} />
@@ -42,7 +42,7 @@ const Routes = () => (
       <Redirect to={SPA_ROUTES.GALLERY} />
     </Route>
     <Route path="/contact-us.html">
-      <Redirect to={STANDALONE_ROUTES.CONTACT_US} />
+      <Redirect to={SPA_ROUTES.CONTACT_US} />
     </Route>
     <Route path="/gameLogs">
       <Redirect to={PHILEAGUE_SPA_ROUTES.GAME_LOGS} />

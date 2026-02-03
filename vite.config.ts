@@ -10,14 +10,9 @@ import postBuild from './post-build';
 export default defineConfig({
   plugins: [react(), tailwindcss(), postBuild()],
   // Trying to get the dev server to re-write just the /src/pages part of the path without affecting the prod build is a massive PITA
-  // base: '/src/pages',
-  // server: {
-  //   proxy: {
-  //     '/': {
-  //       forward: 'http://localhost:5173/src/pages',
-  //     },
-  //   }
-  // },
+  base: "/mj-migration/",
+  server: {
+  },
   build: {
     rollupOptions: {
       // ensures we have one entry point per page; this is useful for SEO and lets us customize <head> tags
