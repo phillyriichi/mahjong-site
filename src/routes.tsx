@@ -11,7 +11,7 @@ import Gallery from './features/gallery'
 import Events from './features/events'
 import OldCity from './features/locations/old-city'
 import Kop from './features/locations/kop'
-import { PHILEAGUE_SPA_ROUTES, SPA_ROUTES } from './route-paths'
+import { baseUrl, PHILEAGUE_SPA_ROUTES, SPA_ROUTES } from './route-paths'
 
 const Routes = () => (
   <Switch>
@@ -66,7 +66,7 @@ const Routes = () => (
       <Redirect to={PHILEAGUE_SPA_ROUTES.SCORE_ENTRY} />
     </Route>
     // Keep default route last
-    <Route path="/" component={Index} />
+    <Route path={baseUrl} component={Index} />
     <Route component={FourOhFour} />
   </Switch>
 )
