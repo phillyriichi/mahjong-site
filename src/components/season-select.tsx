@@ -6,7 +6,7 @@ import {
   type SeasonObject
 } from './backend-manager'
 import BaseSingleSelect from './base-single-select'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
 type SeasonSelectProps = {
   ruleset: RulesetObject | null | undefined

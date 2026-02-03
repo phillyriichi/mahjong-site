@@ -2,7 +2,7 @@ import React from 'react'
 import { CheckboxGroup, VisuallyHidden, useCheckbox, cn } from '@heroui/react'
 
 // 自定义方角按钮组件（HeroUI 默认风格）
-const GroupItem = (props) => {
+const GroupItem = (props: any) => {
   const { isSelected, getBaseProps, getInputProps, getLabelProps } = useCheckbox(props)
 
   return (
@@ -30,12 +30,12 @@ const GroupItem = (props) => {
 }
 
 export default function QueueButtonGroup() {
-  const [selected, setSelected] = React.useState([])
+  const [selected, setSelected] = React.useState<string[]>([])
 
-  const handleLogicChange = (values) => {
+  const handleLogicChange = (values: any) => {
     // 找出最新被点击的值
     const lastKey =
-      values.length > selected.length ? values.find((v) => !selected.includes(v)) : null
+      values.length > selected.length ? values.find((v : string) => !selected.includes(v)) : null
 
     if (!lastKey) {
       setSelected(values) // 处理取消勾选
@@ -47,7 +47,7 @@ export default function QueueButtonGroup() {
       setSelected([lastKey]) // S/B 独占
     } else {
       // 选中 L/C 时，过滤掉 S 和 B
-      const next = values.filter((v) => v === 'L' || v === 'C')
+      const next = values.filter((v: string) => v === 'L' || v === 'C')
       setSelected(next)
     }
   }

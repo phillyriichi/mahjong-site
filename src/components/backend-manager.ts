@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 export interface GcpTimestamp {
   _seconds: number
