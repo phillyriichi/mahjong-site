@@ -25,6 +25,7 @@ import { Icon } from '@iconify/react'
 import useConfirm from './confirm-modal'
 import { useQueryClient } from '@tanstack/react-query'
 import GameLogEditModal from './game-log-edit-modal'
+import { useAdminAuth } from './useAdminAuth'
 
 type GameLogsTableProps = {
   ruleset: RulesetObject | null | undefined
@@ -44,6 +45,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
     onOpen: onEditModalOpen,
     onOpenChange: onEditModalOpenChange
   } = useDisclosure()
+  const { isAdmin } = useAdminAuth()
   const [editModalGameLog, setEditModalGameLog] = useState<GameLog>(DEFAULT_GAME_LOG)
   // process -- The logs are already sorted by timestamp. we need to convert log object to an array form 1st to 4th
   const processedData = useMemo(() => {
@@ -82,11 +84,107 @@ const GameLogsTable = (props: GameLogsTableProps) => {
     )
   }, [processedData.length])
 
-  const headerColumns: { name: string; align: 'start' | 'center' | 'end' }[] = [
-    { name: 'Date', align: 'start' },
-    { name: 'Results', align: 'center' },
-    { name: 'Admin', align: 'center' }
+  const columns: { name: string; align: 'start' | 'center' | 'end'; adminOnly: boolean }[] = [
+    { name: 'Date', align: 'start', adminOnly: false },
+    { name: 'Results', align: 'center', adminOnly: false },
+    { name: 'Admin', align: 'center', adminOnly: true }
   ]
+
+  const headerColumns = useMemo(() => {
+    return columns.filter((col) => !col.adminOnly || isAdmin)
+  }, [isAdmin])
+
+  const renderTableCell = (log: GameLog, columnKey: string) => {
+    if (columnKey == 'Date') {
+      return (
+        <TableCell className="text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
+          {convertGcpTimestampToDate(log.timestamp)?.toLocaleDateString('en-US', {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit'
+          })}
+        </TableCell>
+      )
+    }
+    if (columnKey == 'Results') {
+      return (
+        <TableCell>
+          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-2 min-w-[240px]`}>
+            {log.players.map((p) => (
+              <div key={p.id} className="flex justify-between items-center text-tiny">
+                <span className="truncate max-w-[100px] text-default-600">{p.name}</span>
+                <div className="flex items-center gap-1">
+                  <span
+                    className={`font-mono font-semibold ${
+                      p.totalScore >= 0 ? 'text-success' : 'text-danger'
+                    }`}
+                  >
+                    {Number(p.score).toFixed(0)}
+                  </span>
+
+                  {p.chombo > 0 && (
+                    <span className="text-warning text-[10px]">{'©'.repeat(p.chombo)}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </TableCell>
+      )
+    }
+    if (columnKey == 'Admin') {
+      return (
+        <TableCell>
+          <div className="flex items-center justify-center gap-1">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="primary"
+              onPress={() => {
+                console.log('Editing ', log.id)
+                setEditModalGameLog({ ...log })
+                onEditModalOpen()
+              }}
+            >
+              <Icon icon="material-symbols:edit" height={20} width={20} />
+            </Button>
+
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="danger"
+              onPress={async () => {
+                if (
+                  await ask({
+                    title: `Sure delete game ${log.id}?`,
+                    messages: [
+                      convertGcpTimestampToDate(log.timestamp)?.toLocaleString('en-US') ?? ''
+                    ].concat(
+                      log.players.map(
+                        (p) => `${p.name}: ${p.score} ${p.chombo ? `(chombo: ${p.chombo})` : ''}`
+                      )
+                    ),
+                    confirmText: 'Delete',
+                    type: 'danger'
+                  })
+                ) {
+                  await deleteGameLog(props.ruleset!.id, log.id)
+                  queryClient.invalidateQueries({
+                    queryKey: ['gameLogs', props.ruleset?.id, props.season?.id, props.player?.id]
+                  })
+                }
+              }}
+            >
+              <Icon icon="material-symbols:delete" height={20} width={20} />
+            </Button>
+          </div>
+        </TableCell>
+      )
+    }
+    return <TableCell>Invalid columnKey {columnKey}</TableCell>
+  }
 
   return (
     <div className="relative w-full">
@@ -117,92 +215,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
 
         <TableBody items={processedData} emptyContent={!isFetching ? 'No Data' : ' '}>
           {(log: GameLog) => (
-            <TableRow key={log.id}>
-              <TableCell className="text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
-                {convertGcpTimestampToDate(log.timestamp)?.toLocaleDateString('en-US', {
-                  year: '2-digit',
-                  month: '2-digit',
-                  day: '2-digit'
-                })}
-              </TableCell>
-
-              <TableCell>
-                <div className={`grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-2 min-w-[240px]`}>
-                  {log.players.map((p) => (
-                    <div key={p.id} className="flex justify-between items-center text-tiny">
-                      <span className="truncate max-w-[100px] text-default-600">{p.name}</span>
-                      <div className="flex items-center gap-1">
-                        <span
-                          className={`font-mono font-semibold ${
-                            p.totalScore >= 0 ? 'text-success' : 'text-danger'
-                          }`}
-                        >
-                          {Number(p.score).toFixed(0)}
-                        </span>
-
-                        {p.chombo > 0 && (
-                          <span className="text-warning text-[10px]">{'©'.repeat(p.chombo)}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TableCell>
-
-              <TableCell>
-                <div className="flex items-center justify-center gap-1">
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    color="primary"
-                    onPress={() => {
-                      console.log('Editing ', log.id)
-                      setEditModalGameLog({ ...log })
-                      onEditModalOpen()
-                    }}
-                  >
-                    <Icon icon="material-symbols:edit" height={20} width={20} />
-                  </Button>
-
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="light"
-                    color="danger"
-                    onPress={async () => {
-                      if (
-                        await ask({
-                          title: `Sure delete game ${log.id}?`,
-                          messages: [
-                            convertGcpTimestampToDate(log.timestamp)?.toLocaleString('en-US') ?? ''
-                          ].concat(
-                            log.players.map(
-                              (p) =>
-                                `${p.name}: ${p.score} ${p.chombo ? `(chombo: ${p.chombo})` : ''}`
-                            )
-                          ),
-                          confirmText: 'Delete',
-                          type: 'danger'
-                        })
-                      ) {
-                        await deleteGameLog(props.ruleset!.id, log.id)
-                        queryClient.invalidateQueries({
-                          queryKey: [
-                            'gameLogs',
-                            props.ruleset?.id,
-                            props.season?.id,
-                            props.player?.id
-                          ]
-                        })
-                      }
-                    }}
-                  >
-                    <Icon icon="material-symbols:delete" height={20} width={20} />
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableRow key={log.id}>{(columnKey) => renderTableCell(log, columnKey)}</TableRow>
           )}
         </TableBody>
       </Table>

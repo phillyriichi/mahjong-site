@@ -35,7 +35,7 @@ export default function QueueButtonGroup() {
   const handleLogicChange = (values: any) => {
     // 找出最新被点击的值
     const lastKey =
-      values.length > selected.length ? values.find((v : string) => !selected.includes(v)) : null
+      values.length > selected.length ? values.find((v: string) => !selected.includes(v)) : null
 
     if (!lastKey) {
       setSelected(values) // 处理取消勾选

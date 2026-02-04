@@ -114,10 +114,7 @@ const NavBar = () => {
           <Link href={SPA_ROUTES.GALLERY} className="text-lg font-semibold text-copy-brand-primary">
             Gallery
           </Link>
-          <a
-            href={SPA_ROUTES.CONTACT_US}
-            className="text-lg font-semibold text-copy-brand-primary"
-          >
+          <a href={SPA_ROUTES.CONTACT_US} className="text-lg font-semibold text-copy-brand-primary">
             Contact
           </a>
         </PopoverGroup>
