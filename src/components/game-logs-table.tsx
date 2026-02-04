@@ -20,7 +20,7 @@ import {
   type RulesetObject,
   type SeasonObject
 } from './backend-manager'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type Key } from 'react'
 import { Icon } from '@iconify/react'
 import useConfirm from './confirm-modal'
 import { useQueryClient } from '@tanstack/react-query'
@@ -94,7 +94,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
     return columns.filter((col) => !col.adminOnly || isAdmin)
   }, [isAdmin])
 
-  const renderTableCell = (log: GameLog, columnKey: string) => {
+  const renderTableCell = (log: GameLog, columnKey: Key) => {
     if (columnKey == 'Date') {
       return (
         <TableCell className="text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
