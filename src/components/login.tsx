@@ -2,9 +2,10 @@ import { auth, googleProvider } from './firebase'
 import { signInWithPopup, signOut } from 'firebase/auth'
 import { Button } from '@heroui/button'
 import { useAdminAuth } from './useAdminAuth'
+import { Popover, PopoverTrigger, Avatar, PopoverContent } from '@heroui/react'
 
 function LoginForm() {
-  const { user, isLoading } = useAdminAuth()
+  const { user, isAdmin, isLoading } = useAdminAuth()
 
   if (!user || isLoading) {
     return (
@@ -14,16 +15,14 @@ function LoginForm() {
           await signInWithPopup(auth, googleProvider)
         }}
       >
-        Sign in with Google
+        Sign in
       </Button>
     )
   }
 
   return (
-    <div>
-      <span>{user.displayName}</span>
+    <div className="flex">
       <Button
-        className="ml-2"
         color="danger"
         onPress={() => {
           signOut(auth)
@@ -31,6 +30,23 @@ function LoginForm() {
       >
         Sign out
       </Button>
+      <div className="flex ml-4">
+        <Popover placement="bottom" showArrow={true}>
+          <PopoverTrigger>
+            <Avatar
+              src={user.photoURL ?? undefined}
+              name={user.displayName ?? undefined}
+              className="cursor-pointer"
+            />
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="px-1 py-2">
+              <div className="text-small font-bold">{user.displayName}</div>
+              {isAdmin ? <div className="text-tiny text-default-500">Admin</div> : <></>}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   )
 }

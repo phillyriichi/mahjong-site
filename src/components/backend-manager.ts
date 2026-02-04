@@ -6,6 +6,14 @@ export interface GcpTimestamp {
   _nanoseconds: number
 }
 
+export const MembershipType = {
+  TANYAO: 'TANYAO',
+  MANGAN: 'MANGAN',
+  NON_MEMBER: 'NON_MEMBER'
+} as const
+
+export type MembershipType = (typeof MembershipType)[keyof typeof MembershipType]
+
 export interface MembershipStatus {
   type: string
   expire: GcpTimestamp
@@ -16,6 +24,7 @@ export interface PlayerObject {
   name: string
   signedIn?: boolean
   membership?: MembershipStatus[]
+  email?: string
   [propName: string]: unknown
 }
 
@@ -178,6 +187,12 @@ export const PLACEMENT_TEXT: { [key: string]: string } = {
   2: '2nd',
   3: '3rd',
   4: '4th'
+}
+
+export const MEMBERSHIP_TYPES_TEXT: { [key: string]: string } = {
+  TANYAO: 'Tanyao',
+  MANGAN: 'Mangan',
+  NON_MEMBER: 'NonMember'
 }
 
 export function convertGcpTimestampToDate(timestamp: GcpTimestamp | null): Date | null {
@@ -392,4 +407,35 @@ export async function deleteGameLog(rulesetId: string, gameId: string) {
     game_id: gameId
   }
   await axios.post(BACKEND_URL, dataToPost)
+}
+
+/**
+ * Resolve a player's membership status at a given timestamp
+ *
+ * @param player Player to resolve membership
+ * @param timestamp given timestamp, if null, use the current time.
+ */
+export function resolveMembership(
+  player: PlayerObject | null,
+  timestamp: Date | null = null
+): { type: MembershipType; expire: Date | null } {
+  if (!player || !player.membership || player.membership.length == 0) {
+    return {
+      type: MembershipType.NON_MEMBER,
+      expire: null
+    }
+  }
+  const targetTime = timestamp ?? new Date()
+  for (const membership of player.membership) {
+    if (convertGcpTimestampToDate(membership.expire)!.getTime() >= targetTime.getTime()) {
+      return {
+        type: membership.type as MembershipType,
+        expire: convertGcpTimestampToDate(membership.expire)
+      }
+    }
+  }
+  return {
+    type: MembershipType.NON_MEMBER,
+    expire: null
+  }
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ [ $# == 0 ] ]; then
+if [[ $# == 0 ]]; then
   echo "Please input a tag"
   exit 1
 fi
