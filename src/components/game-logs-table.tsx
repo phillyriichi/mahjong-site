@@ -13,6 +13,7 @@ import {
   convertGcpTimestampToDate,
   DEFAULT_GAME_LOG,
   deleteGameLog,
+  formatDate,
   useGameLogs,
   usePlayers,
   type GameLog,
@@ -98,11 +99,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
     if (columnKey == 'Date') {
       return (
         <TableCell className="text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
-          {convertGcpTimestampToDate(log.timestamp)?.toLocaleDateString('en-US', {
-            year: '2-digit',
-            month: '2-digit',
-            day: '2-digit'
-          })}
+          {formatDate(log.timestamp)}
         </TableCell>
       )
     }

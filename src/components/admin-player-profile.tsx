@@ -1,5 +1,5 @@
 import { Spinner } from '@heroui/spinner'
-import { MembershipType, resolveMembership, usePlayers } from './backend-manager'
+import { formatDate, MembershipType, resolveMembership, usePlayers } from './backend-manager'
 import BaseSingleSelect from './base-single-select'
 import { useMemo, useState } from 'react'
 import type { Key } from '@react-types/shared'
@@ -27,11 +27,7 @@ function summarizeMembershipStatus(membership: {
   if (!membership.expire) {
     return membership.type
   } else {
-    return `${membership.type} (${membership.expire.toLocaleDateString('en-US', {
-      year: '2-digit',
-      month: '2-digit',
-      day: '2-digit'
-    })})`
+    return `${membership.type} (${formatDate(membership.expire)})`
   }
 }
 
@@ -78,7 +74,7 @@ const AdminPlayerProfile = () => {
             }
           }}
         />
-        <Chip className="ml-2" size="lg" color="default">
+        <Chip className="ml-2" color="default">
           Count: {filteredPlayers.length}
         </Chip>
       </div>

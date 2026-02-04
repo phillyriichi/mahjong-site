@@ -1,9 +1,19 @@
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
+import type { CalendarDate } from '@heroui/react'
 
 export interface GcpTimestamp {
   _seconds: number
   _nanoseconds: number
+}
+
+function isGcpTimestamp(val: any): val is GcpTimestamp {
+  return (
+    val !== null &&
+    typeof val === 'object' &&
+    typeof val._seconds === 'number' &&
+    typeof val._nanoseconds === 'number'
+  )
 }
 
 export const MembershipType = {
@@ -13,6 +23,35 @@ export const MembershipType = {
 } as const
 
 export type MembershipType = (typeof MembershipType)[keyof typeof MembershipType]
+
+export const LocationType = {
+  JAWNSOU: 'Jawnsou',
+  KOP: 'KOP'
+} as const
+
+export type LocationType = (typeof LocationType)[keyof typeof LocationType]
+
+export const PaymentType = {
+  CASH: 'Cash',
+  CARD: 'Card',
+  VENMO: 'Venmo',
+  VOUCHER: 'Voucher',
+  WAIVED: 'Wavied'
+} as const
+
+export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
+
+export const ActivityType = {
+  SIGN_IN: 'SIGN_IN',
+  MEMBERSHIP: 'MEMBERSHIP'
+} as const
+
+export type ActivityType = (typeof ActivityType)[keyof typeof ActivityType]
+
+export const ActivityTypeText = {
+  [ActivityType.SIGN_IN]: 'Sign-in',
+  [ActivityType.MEMBERSHIP]: 'Membership'
+}
 
 export interface MembershipStatus {
   type: string
@@ -166,6 +205,25 @@ export interface AggregatedPlayerStatsData {
     points: number
   }[]
   totalScoreSum: number
+}
+
+export interface ActivityLogData {
+  id: string
+  activity: string
+  timestamp: Date
+  playerId: number
+  payment: {
+    price?: number
+    type: string
+  }
+  currentMembership?: MembershipType
+  newMembership?: {
+    tier: string
+    type: MembershipType
+    expire: GcpTimestamp
+  }
+  location?: LocationType
+  [key: string]: any
 }
 
 // Full history season
@@ -438,4 +496,71 @@ export function resolveMembership(
     type: MembershipType.NON_MEMBER,
     expire: null
   }
+}
+
+/**
+ * Fetches activity log data for a given date range.
+ *
+ * @returns fecthed ranking data.
+ */
+export async function fetchActivityLogs(
+  startDateStr: string,
+  endDateStr: string
+): Promise<ActivityLogData[]> {
+  const dataToPost = {
+    action: 'load_activity_logs',
+    start_date: startDateStr,
+    end_date: endDateStr
+  }
+  const response = await axios.post(BACKEND_URL, dataToPost)
+  return response.data.map((item: any) => {
+    return {
+      ...item,
+      timestamp: convertGcpTimestampToDate(item.timestamp)
+    }
+  })
+}
+
+export const useActivityLogs = (
+  start: CalendarDate | null,
+  end: CalendarDate | null,
+  options: { [key: string]: any } = {}
+) => {
+  return useQuery({
+    queryKey: ['activityLogs', start, end],
+    queryFn: async () => {
+      return fetchActivityLogs(start!.toString(), end!.toString())
+    },
+    enabled: !!start && !!end,
+    staleTime: 10000, //10s
+    placeholderData: (previousData) => previousData,
+    ...options
+  })
+}
+
+export const formatDateTime = (val: Date | null): string => {
+  if (!val) {
+    return 'Invalid Date'
+  }
+  return (isGcpTimestamp(val) ? convertGcpTimestampToDate(val) : val)!.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'America/New_York'
+  })
+}
+
+export const formatDate = (val: Date | GcpTimestamp | null): string => {
+  if (!val) {
+    return 'Invalid Date'
+  }
+  return (isGcpTimestamp(val) ? convertGcpTimestampToDate(val) : val)!.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'America/New_York'
+  })
 }
