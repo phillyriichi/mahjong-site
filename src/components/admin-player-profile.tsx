@@ -13,8 +13,6 @@ import {
   TableRow
 } from '@heroui/react'
 
-type AdminPlayerProfileProps = {}
-
 const avialbleFilters = [
   { id: 'TANYAO', selectText: 'Tanyao' },
   { id: 'MANGAN', selectText: 'Mangan' },
@@ -37,7 +35,7 @@ function summarizeMembershipStatus(membership: {
   }
 }
 
-const AdminPlayerProfile = (props: AdminPlayerProfileProps) => {
+const AdminPlayerProfile = () => {
   const { data: players, isLoading } = usePlayers()
   const [membershipFilter, setMembershipFilter] = useState(avialbleFilters[0])
   const filteredPlayers = useMemo(() => {
