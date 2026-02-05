@@ -1,25 +1,8 @@
 import { Spinner } from '@heroui/spinner'
-import {
-  ActivityType,
-  ActivityTypeText,
-  formatDate,
-  formatDateTime,
-  useActivityLogs,
-  type ActivityLogData,
-  type PlayerObject
-} from './backend-manager'
+import { useActivityLogs, type ActivityLogData } from './backend-manager'
 import { CalendarDate } from '@internationalized/date'
-import { useMemo, useState, type Key } from 'react'
-import { Icon } from '@iconify/react'
-import {
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow
-} from '@heroui/react'
+import { useMemo } from 'react'
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react'
 
 type ActivityLogsStatsProps = {
   start: CalendarDate
@@ -228,7 +211,6 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
         topContent={topContent()}
         isHeaderSticky
         classNames={{
-          // 大屏幕增加字体大小和表头间距
           th: 'text-center text-tiny md:text-small md:py-4',
           td: 'text-center last:text-danger last:font-bold'
         }}
@@ -243,7 +225,7 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
         </TableHeader>
 
         <TableBody items={transactionTableData}>
-          {(item) => {
+          {(item: any) => {
             const isTotal = item.title === 'Total'
 
             const renderCellContent = (data: any) => {
@@ -271,7 +253,6 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
                 key={item.title}
                 className={isTotal ? 'text-danger bg-danger-50/50 font-bold' : ''}
               >
-                {/* 这里的 py-2 md:py-4 让大屏幕行高更舒适 */}
                 <TableCell className="text-left text-[11px] md:text-small font-medium py-2 md:py-4">
                   {item.title}
                 </TableCell>

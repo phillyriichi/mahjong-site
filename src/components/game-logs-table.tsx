@@ -98,8 +98,8 @@ const GameLogsTable = (props: GameLogsTableProps) => {
   const renderTableCell = (log: GameLog, columnKey: Key) => {
     if (columnKey == 'Date') {
       return (
-        <TableCell className="text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
-          {formatDate(log.timestamp)}
+        <TableCell className="text-left p-1 text-xs lg:text-md max-w-[60px] lg:max-w-[160px]">
+          {formatDate(log.timestamp, /*short=*/ true)}
         </TableCell>
       )
     }
@@ -132,7 +132,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
     if (columnKey == 'Admin') {
       return (
         <TableCell>
-          <div className="flex items-center justify-center gap-1">
+          <div className="flex items-center justify-center gap-0">
             <Button
               isIconOnly
               size="sm"
@@ -197,6 +197,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
         topContent={topContent}
         isStriped
         isCompact
+        isVirtualized
         classNames={{
           base: isFetching ? 'opacity-50 transition-opacity' : 'opacity-100 transition-opacity',
           wrapper: 'shadow-md'

@@ -15,57 +15,59 @@ const ScoreInputForm = (props: ScoreInputFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successCount, setSuccessCount] = useState(0)
   return (
-    <Form
-      className="flex gap-4 w-full"
-      key={`form-${successCount}`}
-      onSubmit={async (e) => {
-        // prevent default behavior of refreshing the page.
-        e.preventDefault()
-        setIsSubmitting(true)
-        const success = await props.onSubmit()
-        setIsSubmitting(false)
-        if (success) {
-          setSuccessCount((prev) => prev + 1)
-        }
-      }}
-    >
-      {props.records.map((item, index) => {
-        return (
-          <div key={`input-${index}`}>
-            {/* we need submitted in the key to enforce resettting the value after submission. */}
-            <DividerWithText text={`Player ${index + 1}`} />
-            <ScoreInputWidget
-              player={item.player}
-              scoreData={item.scoreData}
-              onInputChange={(player: PlayerObject | null | undefined, scoreData: ScoreData) => {
-                props.setRecords((prev) =>
-                  prev.map((record, i) => {
-                    if (i !== index) {
-                      return record
-                    }
-                    return {
-                      player: player ? { ...player } : null,
-                      scoreData: { ...scoreData }
-                    }
-                  })
-                )
-              }}
-            />
-          </div>
-        )
-      })}
-      <div className="flex font-bold mx-2 text-lg">
-        Total: {props.records.reduce((prev, cur) => prev + cur.scoreData.score, 0)}
-      </div>
-      {props.hideSubmitButton ? (
-        <></>
-      ) : (
-        <Button type="submit" color="primary" className="px-6 font-bold" isLoading={isSubmitting}>
-          {' '}
-          Submit{' '}
-        </Button>
-      )}
-    </Form>
+    <div className="w-full">
+      <Form
+        className="flex gap-4 w-full"
+        key={`form-${successCount}`}
+        onSubmit={async (e) => {
+          // prevent default behavior of refreshing the page.
+          e.preventDefault()
+          setIsSubmitting(true)
+          const success = await props.onSubmit()
+          setIsSubmitting(false)
+          if (success) {
+            setSuccessCount((prev) => prev + 1)
+          }
+        }}
+      >
+        {props.records.map((item, index) => {
+          return (
+            <div key={`input-${index}`}>
+              {/* we need submitted in the key to enforce resettting the value after submission. */}
+              <DividerWithText text={`Player ${index + 1}`} />
+              <ScoreInputWidget
+                player={item.player}
+                scoreData={item.scoreData}
+                onInputChange={(player: PlayerObject | null | undefined, scoreData: ScoreData) => {
+                  props.setRecords((prev) =>
+                    prev.map((record, i) => {
+                      if (i !== index) {
+                        return record
+                      }
+                      return {
+                        player: player ? { ...player } : null,
+                        scoreData: { ...scoreData }
+                      }
+                    })
+                  )
+                }}
+              />
+            </div>
+          )
+        })}
+        <div className="flex font-bold mx-2 text-lg">
+          Total: {props.records.reduce((prev, cur) => prev + cur.scoreData.score, 0)}
+        </div>
+        {props.hideSubmitButton ? (
+          <></>
+        ) : (
+          <Button type="submit" color="primary" className="px-6 font-bold" isLoading={isSubmitting}>
+            {' '}
+            Submit{' '}
+          </Button>
+        )}
+      </Form>
+    </div>
   )
 }
 

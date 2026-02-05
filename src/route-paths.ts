@@ -7,7 +7,8 @@ export const SPA_ROUTES = {
   EVENTS: `${baseUrl}events`,
   OLD_CITY: `${baseUrl}locations/old-city`,
   KOP: `${baseUrl}locations/kop`,
-  CONTACT_US: `${baseUrl}contact-us`
+  CONTACT_US: `${baseUrl}contact-us`,
+  LEAGUE: `${baseUrl}league`
 }
 
 export const PHILEAGUE_SPA_ROUTES = {

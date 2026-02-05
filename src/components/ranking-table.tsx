@@ -102,6 +102,7 @@ const RankingTable = (props: RankingTableProps) => {
         value={totalDays - daysLeft}
         size="lg"
         color={color}
+        className="mb-2"
       />
     )
   }, [props.season])
@@ -127,6 +128,7 @@ const RankingTable = (props: RankingTableProps) => {
         aria-label="ranking table"
         layout="fixed"
         isStriped
+        isVirtualized
         classNames={{
           base: isFetching ? 'opacity-50 transition-opacity' : 'opacity-100 transition-opacity',
           wrapper: 'shadow-md'

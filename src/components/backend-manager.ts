@@ -553,12 +553,12 @@ export const formatDateTime = (val: Date | null): string => {
   })
 }
 
-export const formatDate = (val: Date | GcpTimestamp | null): string => {
+export const formatDate = (val: Date | GcpTimestamp | null, short: boolean = false): string => {
   if (!val) {
     return 'Invalid Date'
   }
   return (isGcpTimestamp(val) ? convertGcpTimestampToDate(val) : val)!.toLocaleDateString('en-US', {
-    year: 'numeric',
+    year: short ? '2-digit' : 'numeric',
     month: '2-digit',
     day: '2-digit',
     timeZone: 'America/New_York'

@@ -12,6 +12,7 @@ import Events from './features/events'
 import OldCity from './features/locations/old-city'
 import Kop from './features/locations/kop'
 import Admin from './features/admin'
+import League from './features/league'
 import { baseUrl, PHILEAGUE_SPA_ROUTES, SPA_ROUTES } from './route-paths'
 
 const Routes = () => (
@@ -22,6 +23,8 @@ const Routes = () => (
     <Route path={SPA_ROUTES.OLD_CITY} component={OldCity} />
     <Route path={SPA_ROUTES.KOP} component={Kop} />
     <Route path={SPA_ROUTES.ADMIN} component={Admin} />
+    <Route path={SPA_ROUTES.LEAGUE} component={League} />
+    <Route path={SPA_ROUTES.HOME} component={Index} />
     // Phileague routes
     <Route path={PHILEAGUE_SPA_ROUTES.GAME_LOGS} component={GameLogs} />
     <Route path={PHILEAGUE_SPA_ROUTES.GAME_SHUFFLE} component={GameShuffle} />
