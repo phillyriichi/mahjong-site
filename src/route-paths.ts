@@ -10,10 +10,3 @@ export const SPA_ROUTES = {
   CONTACT_US: `${baseUrl}contact-us`,
   LEAGUE: `${baseUrl}league`
 }
-
-export const PHILEAGUE_SPA_ROUTES = {
-  GAME_LOGS: `${baseUrl}phileague/game-logs`,
-  GAME_SHUFFLE: `${baseUrl}phileague/game-shuffle`,
-  RANKINGS: `${baseUrl}phileague/rankings`,
-  SCORE_ENTRY: `${baseUrl}phileague/score-entry`
-}

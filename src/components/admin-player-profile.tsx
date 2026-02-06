@@ -1,5 +1,5 @@
 import { Spinner } from '@heroui/spinner'
-import { formatDate, MembershipType, resolveMembership, usePlayers } from './backend-manager'
+import { resolveMembership, summarizeMembershipStatus, usePlayers } from './backend-manager'
 import BaseSingleSelect from './base-single-select'
 import { useMemo, useState } from 'react'
 import type { Key } from '@react-types/shared'
@@ -12,24 +12,15 @@ import {
   TableHeader,
   TableRow
 } from '@heroui/react'
+import PlayerUpdateInputForm from './player-update-input-form'
+import DividerWithText from './divider-with-text'
 
 const avialbleFilters = [
+  { id: 'ALL', selectText: 'All' },
   { id: 'TANYAO', selectText: 'Tanyao' },
   { id: 'MANGAN', selectText: 'Mangan' },
-  { id: 'NON_MEMBER', selectText: 'NonMember' },
-  { id: 'ALL', selectText: 'All' }
+  { id: 'NON_MEMBER', selectText: 'NonMember' }
 ]
-
-function summarizeMembershipStatus(membership: {
-  type: MembershipType
-  expire: Date | null
-}): string {
-  if (!membership.expire) {
-    return membership.type
-  } else {
-    return `${membership.type} (${formatDate(membership.expire)})`
-  }
-}
 
 const AdminPlayerProfile = () => {
   const { data: players, isLoading } = usePlayers()
@@ -39,7 +30,7 @@ const AdminPlayerProfile = () => {
       return []
     }
     const now = new Date()
-    return players.filter((p) => {
+    return Object.values(players).filter((p) => {
       if (membershipFilter.id == 'ALL') {
         return true
       } else {
@@ -61,7 +52,7 @@ const AdminPlayerProfile = () => {
       <div className="w-full row">
         <BaseSingleSelect
           className="max-w-[50%] max-w-[200px]"
-          label="Membership"
+          label="Membership Filter"
           availableItems={avialbleFilters}
           isLoading={false}
           selectedKey={membershipFilter.id}
@@ -82,35 +73,43 @@ const AdminPlayerProfile = () => {
   }
 
   return (
-    <div className="w-full min-h-[400px]">
-      <Table
-        aria-label="admin-player-profile-table"
-        layout="auto"
-        isStriped
-        topContent={topContent()}
-        classNames={{
-          base: 'max-w-full',
-          table: 'min-w-[600px]'
-        }}
-      >
-        <TableHeader>
-          <TableColumn> ID </TableColumn>
-          <TableColumn> Name </TableColumn>
-          <TableColumn> Active Membership </TableColumn>
-          <TableColumn> Email </TableColumn>
-        </TableHeader>
+    <div className="w-full">
+      <div className="w-full">
+        <PlayerUpdateInputForm />
+      </div>
 
-        <TableBody items={filteredPlayers}>
-          {(p) => (
-            <TableRow key={`player-${p.id}`}>
-              <TableCell>{p.id}</TableCell>
-              <TableCell>{p.name}</TableCell>
-              <TableCell>{summarizeMembershipStatus(resolveMembership(p))}</TableCell>
-              <TableCell>{p.email}</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <DividerWithText text={'Exitsing Players'} />
+
+      <div className="w-full mt-2 min-h-[400px]">
+        <Table
+          aria-label="admin-player-profile-table"
+          layout="auto"
+          isStriped
+          topContent={topContent()}
+          classNames={{
+            base: 'max-w-full',
+            table: 'min-w-[600px]'
+          }}
+        >
+          <TableHeader>
+            <TableColumn> ID </TableColumn>
+            <TableColumn> Name </TableColumn>
+            <TableColumn> Active Membership </TableColumn>
+            <TableColumn> Email </TableColumn>
+          </TableHeader>
+
+          <TableBody items={filteredPlayers}>
+            {(p) => (
+              <TableRow key={`player-${p.id}`}>
+                <TableCell>{p.id}</TableCell>
+                <TableCell>{p.name}</TableCell>
+                <TableCell>{summarizeMembershipStatus(resolveMembership(p))}</TableCell>
+                <TableCell>{p.email}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

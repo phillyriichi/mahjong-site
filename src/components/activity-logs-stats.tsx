@@ -174,7 +174,6 @@ function resolveLogsStats(activtyLogs: ActivityLogData[]) {
     { title: 'Total', ...logStats.Total_transaction }
   ]
 
-  console.log('!!! ', transactionTableData, logStats)
   return {
     transactionTableData: transactionTableData,
     logStats: logStats

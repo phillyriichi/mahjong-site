@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import { type PlayerObject, type RulesetObject, type SeasonObject } from './backend-manager'
-import PlayerSelect from './player-select'
+import { type RulesetObject, type SeasonObject } from './backend-manager'
 import GameLogsTable from './game-logs-table'
 
 type LeagueGameLogsProps = {
@@ -9,16 +7,10 @@ type LeagueGameLogsProps = {
 }
 
 const LeagueGameLogs = (props: LeagueGameLogsProps) => {
-  const [player, setPlayer] = useState<PlayerObject | null>()
-
   return (
     <div className="w-full">
-      <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 px-2 mb-4">
-        <PlayerSelect selectedPlayer={player} onSelectionChange={setPlayer} />
-      </div>
-
       <div className="mt-2">
-        <GameLogsTable ruleset={props.ruleset} season={props.season} player={player} />
+        <GameLogsTable ruleset={props.ruleset} season={props.season} />
       </div>
     </div>
   )

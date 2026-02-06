@@ -9,6 +9,7 @@ type ScoreInputFormProps = {
   setRecords: (value: React.SetStateAction<PlayerScoreRecord[]>) => void
   onSubmit: () => Promise<boolean>
   hideSubmitButton?: boolean
+  compact?: boolean
 }
 
 const ScoreInputForm = (props: ScoreInputFormProps) => {
@@ -18,7 +19,7 @@ const ScoreInputForm = (props: ScoreInputFormProps) => {
     <div className="w-full">
       <Form
         className="flex gap-4 w-full"
-        key={`form-${successCount}`}
+        key={`score-entry-form-${successCount}`}
         onSubmit={async (e) => {
           // prevent default behavior of refreshing the page.
           e.preventDefault()
@@ -51,6 +52,7 @@ const ScoreInputForm = (props: ScoreInputFormProps) => {
                     })
                   )
                 }}
+                compact={props.compact}
               />
             </div>
           )

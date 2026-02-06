@@ -5,6 +5,7 @@ import {
   usePlayerStats,
   type AggregatedPlayerStatsData,
   type PlayerObject,
+  type PlayersMap,
   type RulesetObject,
   type SeasonObject
 } from './backend-manager'
@@ -203,7 +204,7 @@ function getRankingChartOption(stats: AggregatedPlayerStatsData | null | undefin
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{c} Games ({d}%)'
+      formatter: '{b}<br>{c} Games ({d}%)'
     },
     series: [
       {
@@ -289,7 +290,7 @@ function getPointsDistributionOption(
 
 function getFrequentOpponentsOption(
   stats: AggregatedPlayerStatsData | null | undefined,
-  players: PlayerObject[] | null | undefined
+  players: PlayersMap | null | undefined
 ) {
   if (!stats || !stats.opponentsStats || !players) {
     return {}
@@ -308,7 +309,7 @@ function getFrequentOpponentsOption(
 
   const data = sortedOpponents.slice(0, Math.min(9, sortedOpponents.length)).map((p) => {
     return {
-      name: players.find((item) => item.id === Number(p.id))?.name,
+      name: players[Number(p.id)]?.name,
       value: p.numGames
     }
   })
@@ -318,7 +319,7 @@ function getFrequentOpponentsOption(
     },
     tooltip: {
       trigger: 'item',
-      formatter: '{c} Games'
+      formatter: '{b}<br>{c} Games'
     },
     series: [
       {
@@ -341,7 +342,7 @@ function getFrequentOpponentsOption(
 
 function getPointSourceOption(
   stats: AggregatedPlayerStatsData | null | undefined,
-  players: PlayerObject[] | null | undefined
+  players: PlayersMap | null | undefined
 ) {
   if (!stats || !stats.opponentsStats || !players) {
     return {}
@@ -360,7 +361,7 @@ function getPointSourceOption(
     })
   const data = sortedOpponents.slice(0, Math.min(9, sortedOpponents.length)).map((p) =>
     Object({
-      name: players.find((item) => item.id === Number(p.id))?.name,
+      name: players[Number(p.id)]?.name,
       value: Math.floor(p.pointsExchangeEstimation)
     })
   )
@@ -370,7 +371,7 @@ function getPointSourceOption(
     },
     tooltip: {
       trigger: 'item',
-      formatter: 'Points Gain: +{c}'
+      formatter: '{b}<br>Points: +{c}'
     },
     series: [
       {
@@ -393,7 +394,7 @@ function getPointSourceOption(
 
 function getPointDonationOption(
   stats: AggregatedPlayerStatsData | null | undefined,
-  players: PlayerObject[] | null | undefined
+  players: PlayersMap | null | undefined
 ) {
   if (!stats || !stats.opponentsStats || !players) {
     return {}
@@ -407,7 +408,7 @@ function getPointDonationOption(
     })
   const data = sortedOpponents.slice(0, Math.min(9, sortedOpponents.length)).map((p) =>
     Object({
-      name: players.find((item) => item.id === Number(p.id))?.name,
+      name: players[Number(p.id)]?.name,
       value: Math.floor(-p.pointsExchangeEstimation)
     })
   )
@@ -417,7 +418,7 @@ function getPointDonationOption(
     },
     tooltip: {
       trigger: 'item',
-      formatter: 'Points Donation: -{c}'
+      formatter: '{b}<br>Points: -{c}'
     },
     series: [
       {
@@ -448,8 +449,7 @@ const PlayerStats = (props: PlayerStatsProps) => {
 
   useEffect(() => {
     if (players && props.playerId) {
-      const found = players.find((item) => item.id == props.playerId)
-      setSelectedPlayer(found ?? null)
+      setSelectedPlayer(players[props.playerId] ?? null)
     }
   }, [players, props.playerId])
 
@@ -527,42 +527,44 @@ const PlayerStats = (props: PlayerStatsProps) => {
     )
   }
 
+  const mobileStyle = { height: 280, width: '90%' }
+
   return (
     <>
       {header()}
       <div className="flex flex-wrap">
         {selectedRuleset?.id == 'PHI_LEAGUE' ? (
-          <ReactECharts option={profileChartOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={profileChartOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(recentGamesOption).length > 0 ? (
-          <ReactECharts option={recentGamesOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={recentGamesOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(rankingChartOption).length > 0 ? (
-          <ReactECharts option={rankingChartOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={rankingChartOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(pointsDistributionOption).length > 0 ? (
-          <ReactECharts option={pointsDistributionOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={pointsDistributionOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(frequentOpponentsOption).length > 0 ? (
-          <ReactECharts option={frequentOpponentsOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={frequentOpponentsOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(pointSourceOption).length > 0 ? (
-          <ReactECharts option={pointSourceOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={pointSourceOption} style={mobileStyle} />
         ) : (
           <></>
         )}
         {Object.keys(pointDonationOption).length > 0 ? (
-          <ReactECharts option={pointDonationOption} style={{ height: 400, width: '100%' }} />
+          <ReactECharts option={pointDonationOption} style={mobileStyle} />
         ) : (
           <></>
         )}

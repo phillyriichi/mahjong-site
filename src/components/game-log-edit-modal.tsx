@@ -47,6 +47,7 @@ const GameLogEditModal = (props: GameLogEditModalProps) => {
                 setRecords={setRecords}
                 onSubmit={onUpdateGame}
                 hideSubmitButton={true}
+                compact={true}
               />
             </ModalBody>
             <ModalFooter>

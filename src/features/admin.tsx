@@ -8,7 +8,6 @@ import { useLocalStorage } from 'usehooks-ts'
 import { Tabs, Tab, Divider } from '@heroui/react'
 import AdminPlayerProfile from '../components/admin-player-profile'
 import AdminSignIn from '../components/admin-sign-in'
-import AdminMembership from '../components/admin-membership'
 import AdminGameShuffle from '../components/admin-game-shuffle'
 import AdminRulesets from '../components/admin-rulesets'
 import { useAdminAuth } from '../components/useAdminAuth'
@@ -39,9 +38,6 @@ const Admin = () => {
                 >
                   <Tab key="sign-in-tab" title="Sign In">
                     <AdminSignIn />
-                  </Tab>
-                  <Tab key="membership-tab" title="Membership">
-                    <AdminMembership />
                   </Tab>
                   <Tab key="game-shuffle-tab" title="Game Shuffle">
                     <AdminGameShuffle />

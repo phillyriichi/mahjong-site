@@ -8,6 +8,9 @@ type PlayerSelectProps = {
   onSelectionChange: (value: PlayerObject | null) => void
   className?: string
   signedinOnly?: boolean
+  variant?: 'flat' | 'bordered' | 'faded' | 'underlined'
+  label?: string
+  labelPlacement?: 'inside' | 'outside' | 'outside-left' | 'outside-top'
 }
 
 const PlayerSelect = (props: PlayerSelectProps) => {
@@ -27,17 +30,18 @@ const PlayerSelect = (props: PlayerSelectProps) => {
 
   const filteredPlayers = useMemo(() => {
     if (!availablePlayers) return []
-    return availablePlayers.filter((item) => {
+    return Object.values(availablePlayers).filter((item) => {
       return props.signedinOnly ? !!item.signedIn : true
     })
   }, [availablePlayers, props.signedinOnly])
 
   return (
     <Autocomplete
-      variant="underlined"
+      variant={props.variant ?? 'underlined'}
       size="sm"
       className={props.className ?? 'max-w-xs'}
-      label="Player"
+      label={props.label ?? 'Player'}
+      labelPlacement={props.labelPlacement ?? 'inside'}
       isLoading={isPending}
       selectedKey={playerId?.toString() ?? undefined}
       onSelectionChange={(key) => {
@@ -46,17 +50,16 @@ const PlayerSelect = (props: PlayerSelectProps) => {
         props.onSelectionChange(found ?? null)
       }}
     >
-      {availablePlayers
-        ? availablePlayers
-            .filter((item) => {
-              let rst = true
-              if (props.signedinOnly) {
-                rst &&= !!item.signedIn
-              }
-              return rst
-            })
-            .map((item) => <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>)
-        : []}
+      {filteredPlayers &&
+        filteredPlayers
+          .filter((item) => {
+            let rst = true
+            if (props.signedinOnly) {
+              rst &&= !!item.signedIn
+            }
+            return rst
+          })
+          .map((item) => <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>)}
     </Autocomplete>
   )
 }

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
-import type { CalendarDate } from '@heroui/react'
+import { addToast, type CalendarDate } from '@heroui/react'
+import type { Key } from 'react'
 
 export interface GcpTimestamp {
   _seconds: number
@@ -24,6 +25,24 @@ export const MembershipType = {
 
 export type MembershipType = (typeof MembershipType)[keyof typeof MembershipType]
 
+export const MembershipOperationType = {
+  TANYAO: 'Tanyao', // null to tanyao
+  MANGAN: 'Mangan', // null to mangan
+  TAN2MAN: 'Tan2Man', // tanyao to mangan
+  SINGLE_VISIT: 'SingleVisit' // non-member single visit
+} as const
+
+export type MembershipOperationType =
+  (typeof MembershipOperationType)[keyof typeof MembershipOperationType]
+
+export const AdminOpType = {
+  SIGN_IN: 'SignIn',
+  MEMBERSHIP: 'Membership',
+  FIRST_TIME_VISIT: 'FirstTimeVisit'
+} as const
+
+export type AdminOpType = (typeof AdminOpType)[keyof typeof AdminOpType]
+
 export const LocationType = {
   JAWNSOU: 'Jawnsou',
   KOP: 'KOP'
@@ -41,6 +60,14 @@ export const PaymentType = {
 
 export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 
+export const QueueType = {
+  LEAGUE: 'League',
+  FLEXIBLE: 'Flexible',
+  CASUAL: 'Casual'
+} as const
+
+export type QueueType = (typeof QueueType)[keyof typeof QueueType]
+
 export const ActivityType = {
   SIGN_IN: 'SIGN_IN',
   MEMBERSHIP: 'MEMBERSHIP'
@@ -54,7 +81,7 @@ export const ActivityTypeText = {
 }
 
 export interface MembershipStatus {
-  type: string
+  type: MembershipType
   expire: GcpTimestamp
 }
 
@@ -66,6 +93,8 @@ export interface PlayerObject {
   email?: string
   [propName: string]: unknown
 }
+
+export type PlayersMap = { [key: number]: PlayerObject }
 
 export interface RulesetObject {
   id: string
@@ -287,18 +316,33 @@ export function loadAllPlayers(): PlayerObject[] {
  *
  * @returns fetched player data.
  */
-export async function fetchPlayers(): Promise<PlayerObject[]> {
+export async function fetchPlayers(): Promise<PlayersMap> {
   const dataToPost = { action: 'load_players' }
   const response = await axios.post(BACKEND_URL, dataToPost)
-  return response.data.players
+  const playersMap: { [key: number]: PlayerObject } = {}
+  if (response.data.players) {
+    response.data.players.forEach((item: PlayerObject) => (playersMap[item.id] = { ...item }))
+  }
+  return playersMap
 }
 
 export const usePlayers = () => {
   return useQuery({
     queryKey: ['players'],
     queryFn: fetchPlayers,
-    staleTime: 5000 //5s
+    staleTime: 1000 * 60 * 30 //30min
   })
+}
+
+export async function updatePlayer(id: number, name: string, email: string) {
+  const dataToPost: { [key: string]: any } = {
+    action: 'update_player',
+    player_id: id,
+    player_name: name,
+    player_email: email
+  }
+  const response = await axios.post(BACKEND_URL, dataToPost)
+  return response.data
 }
 
 /**
@@ -349,7 +393,7 @@ export const useRanking = (
       return fecthRanking(ruleset!.id, season!)
     },
     enabled: !!ruleset && !!season,
-    staleTime: 10000, //10s
+    staleTime: 1000 * 60 * 5, // 5min
     placeholderData: (previousData) => previousData,
     ...options
   })
@@ -394,7 +438,7 @@ export const usePlayerStats = (
       return fetchPlayerStats(ruleset!, season!, playerId!, playerName!)
     },
     enabled: !!ruleset?.id && !!season && !!playerId && !!playerName,
-    staleTime: 30000, //30s
+    staleTime: 1000 * 60 * 5, // 5min
     placeholderData: (previousData) => previousData,
     ...options
   })
@@ -437,7 +481,7 @@ export const useGameLogs = (
       return fetchGameLogs(ruleset!.id, season!, player)
     },
     enabled: !!ruleset && !!season,
-    staleTime: 10000, // 10s
+    staleTime: 1000 * 60 * 5, // 5min
     placeholderData: (previousData) => previousData,
     ...options
   })
@@ -563,4 +607,46 @@ export const formatDate = (val: Date | GcpTimestamp | null, short: boolean = fal
     day: '2-digit',
     timeZone: 'America/New_York'
   })
+}
+
+export const alertWithToast = (
+  type: 'default' | 'foreground' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger',
+  description: string,
+  title?: string
+) => {
+  let toastTitle = ''
+  if (title) {
+    toastTitle = title
+  } else if (type == 'danger') {
+    toastTitle = 'Error'
+  } else if (type == 'success') {
+    toastTitle = 'Success'
+  } else if (type == 'warning') {
+    toastTitle = 'Warn'
+  }
+  addToast({
+    title: toastTitle,
+    description: description,
+    color: type,
+    variant: 'flat',
+    classNames: {
+      base: 'max-w-[400px] min-h-[120px]',
+      title: 'text-lg font-bold',
+      description: 'text-lg'
+    }
+  })
+}
+
+/**
+ * Summarize a player's membership status and return a string
+ */
+export function summarizeMembershipStatus(membership: {
+  type: MembershipType
+  expire: Date | GcpTimestamp | null
+}): string {
+  if (!membership.expire) {
+    return membership.type
+  } else {
+    return `${membership.type} (${formatDate(membership.expire)})`
+  }
 }

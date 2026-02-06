@@ -6,12 +6,13 @@ type ScoreInputWidgetProps = {
   player: PlayerObject | null | undefined
   scoreData: ScoreData
   onInputChange: (player: PlayerObject | null | undefined, scoreData: ScoreData) => void
+  compact?: boolean
 }
 
 const ScoreInputWidget = (props: ScoreInputWidgetProps) => {
   return (
     <div className="flex flex-wrap md:flex-row items-end gap-4 w-full mb-1">
-      <div className="w-full md:flex-1">
+      <div className={props.compact ? 'w-full flex-4' : 'w-full md:flex-1'}>
         <PlayerSelect
           className="w-full"
           selectedPlayer={props.player}
@@ -21,7 +22,7 @@ const ScoreInputWidget = (props: ScoreInputWidgetProps) => {
         />
       </div>
 
-      <div className="flex-1 md:flex-1">
+      <div className={props.compact ? 'flex-3' : 'md:flex-1'}>
         <NumberInput
           label="Score"
           value={props.scoreData.score}
@@ -39,7 +40,7 @@ const ScoreInputWidget = (props: ScoreInputWidgetProps) => {
         />
       </div>
 
-      <div className="flex-1 md:flex-1">
+      <div className={props.compact ? 'flex-2' : 'md:flex-1'}>
         <NumberInput
           label="Chombo"
           value={props.scoreData.chombo}

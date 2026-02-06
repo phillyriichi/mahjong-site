@@ -15,7 +15,6 @@ import {
 } from '../components/backend-manager'
 import RulesetSelect from '../components/ruleset-select'
 import SeasonSelect from '../components/season-select'
-import { useEffect, useState } from 'react'
 
 const League = () => {
   const [selectedTab, setSelectedTab] = useLocalStorage<string>(
