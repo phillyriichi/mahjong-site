@@ -3,10 +3,12 @@ import {
   ActivityType,
   ActivityTypeText,
   formatDate,
-  formatDateTime,
+  formatTime,
   useActivityLogs,
+  usePlayers,
   type ActivityLogData,
-  type PlayerObject
+  type PlayerObject,
+  type PlayersMap
 } from './backend-manager'
 import { CalendarDate } from '@internationalized/date'
 import { useMemo, useState, type Key } from 'react'
@@ -39,13 +41,13 @@ function createPaymentSummary(log: ActivityLogData): string {
   return ''
 }
 
-function renderActivityTableCell(log: ActivityLogData) {
-  if (log) {
+function renderActivityTableCell(log: ActivityLogData, players: PlayersMap | null | undefined) {
+  if (log && players) {
     if (log.activity == ActivityType.SIGN_IN) {
       return (
         <div className="flex flex-col gap-1">
           <span className="text-small font-medium text-default-700">
-            {`${log.playerId} signed in`}
+            {`${players[log.playerId]?.name} signed in`}
           </span>
           <span className="text-tiny text-default-600">
             {`${log.currentMembership}, ${createPaymentSummary(log)}`}
@@ -56,7 +58,7 @@ function renderActivityTableCell(log: ActivityLogData) {
       return (
         <div className="flex flex-col gap-1">
           <span className="text-small font-medium text-blue-400">
-            {`${log.playerId} obtained [${log!.newMembership!.type}]`}
+            {`${players[log.playerId]?.name} obtained [${log!.newMembership!.type}]`}
           </span>
           <span className="text-tiny text-default-400">
             {`expiring ${formatDate(log!.newMembership!.expire)}, ${createPaymentSummary(log)}`}
@@ -76,7 +78,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
   )
   const [activityFilter, setActivityFilter] = useState(availableActivityFilters[0])
   const [playerFilter, setPlayerFilter] = useState<PlayerObject | null>()
-
+  const { data: players, isPending: isPlayerssPending } = usePlayers()
   const { data: activityLogs, isFetching } = useActivityLogs(props.start, props.end)
   const filteredActiveityLogs = useMemo(() => {
     if (!activityLogs) {
@@ -99,7 +101,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
         <div className="w-full row flex">
           <BaseSingleSelect
             className="max-w-[40%] max-w-[200px]"
-            label="Activity"
+            label="Activity Filter"
             availableItems={availableActivityFilters}
             isLoading={false}
             selectedKey={activityFilter.id}
@@ -114,6 +116,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
           />
           <PlayerSelect
             className="max-w-[40%] max-w-[200px] ml-2"
+            label="Player Filter"
             selectedPlayer={playerFilter}
             onSelectionChange={setPlayerFilter}
           />
@@ -136,7 +139,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
 
       <Table
         aria-label="admin-player-profile-table"
-        layout="auto"
+        layout="fixed"
         isStriped
         isVirtualized
         topContent={topContent()}
@@ -145,22 +148,31 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
         }}
       >
         <TableHeader>
-          <TableColumn> Timestamp </TableColumn>
+          <TableColumn width={100}> Timestamp </TableColumn>
           <TableColumn> Activity </TableColumn>
-          <TableColumn> Operation </TableColumn>
+          <TableColumn width={40}> </TableColumn>
         </TableHeader>
 
         <TableBody items={filteredActiveityLogs}>
           {(log) => (
             <TableRow key={`activity-log-${log.id}`}>
-              <TableCell className="whitespace-nowrap">{formatDateTime(log.timestamp)}</TableCell>
-              <TableCell className="py-1">{renderActivityTableCell(log)}</TableCell>
+              <TableCell className="whitespace-nowrap text-tiny">
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[11px] text-default-700">{formatDate(log.timestamp)}</span>
+                  <span className="text-[10px] font-medium text-default-400">
+                    {formatTime(log.timestamp)}
+                  </span>
+                </div>
+              </TableCell>
+              <TableCell className="py-1">{renderActivityTableCell(log, players)}</TableCell>
               <TableCell>
                 <button
                   className="p-2 hover:bg-default-100 rounded-full"
-                  onClick={() => console.log('!!! clicked on ', log.id)}
+                  onClick={() => {
+                    console.log('!!! clicked on ', log.id)
+                  }}
                 >
-                  <Icon icon="material-symbols:delete" className="w-6 h-6" color="red" />
+                  <Icon icon="material-symbols:delete" className="w-4 h-4" color="red" />
                 </button>
               </TableCell>
             </TableRow>

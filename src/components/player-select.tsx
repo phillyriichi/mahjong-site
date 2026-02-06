@@ -1,4 +1,4 @@
-import { Autocomplete, AutocompleteItem } from '@heroui/react'
+import { Autocomplete, AutocompleteItem, Chip } from '@heroui/react'
 import { usePlayers, type PlayerObject } from './backend-manager'
 import type { Key } from '@react-types/shared'
 import { useEffect, useMemo, useState } from 'react'
@@ -11,6 +11,7 @@ type PlayerSelectProps = {
   variant?: 'flat' | 'bordered' | 'faded' | 'underlined'
   label?: string
   labelPlacement?: 'inside' | 'outside' | 'outside-left' | 'outside-top'
+  showSigninStatus?: boolean
 }
 
 const PlayerSelect = (props: PlayerSelectProps) => {
@@ -49,6 +50,15 @@ const PlayerSelect = (props: PlayerSelectProps) => {
         const found = filteredPlayers.find((p) => p.id.toString() === key?.toString())
         props.onSelectionChange(found ?? null)
       }}
+      endContent={
+        props.showSigninStatus &&
+        props.selectedPlayer?.signedIn && (
+          <Chip size="sm" color="success">
+            {' '}
+            Signed In
+          </Chip>
+        )
+      }
     >
       {filteredPlayers &&
         filteredPlayers
@@ -59,7 +69,22 @@ const PlayerSelect = (props: PlayerSelectProps) => {
             }
             return rst
           })
-          .map((item) => <AutocompleteItem key={item.id}>{item.name}</AutocompleteItem>)}
+          .map((item) => (
+            <AutocompleteItem
+              key={item.id}
+              endContent={
+                props.showSigninStatus &&
+                item?.signedIn && (
+                  <Chip size="sm" color="success">
+                    {' '}
+                    Signed In
+                  </Chip>
+                )
+              }
+            >
+              {item.name}
+            </AutocompleteItem>
+          ))}
     </Autocomplete>
   )
 }

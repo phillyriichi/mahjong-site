@@ -609,6 +609,18 @@ export const formatDate = (val: Date | GcpTimestamp | null, short: boolean = fal
   })
 }
 
+export const formatTime = (val: Date | null): string => {
+  if (!val) {
+    return 'Invalid Time'
+  }
+  return (isGcpTimestamp(val) ? convertGcpTimestampToDate(val) : val)!.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'America/New_York'
+  })
+}
+
 export const alertWithToast = (
   type: 'default' | 'foreground' | 'primary' | 'secondary' | 'success' | 'warning' | 'danger',
   description: string,
