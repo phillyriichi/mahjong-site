@@ -1,5 +1,13 @@
 import { Spinner } from '@heroui/spinner'
-import { resolveMembership, summarizeMembershipStatus, usePlayers } from './backend-manager'
+import {
+  formatDate,
+  MembershipType,
+  MembershipTypeText,
+  resolveMembership,
+  summarizeMembershipStatus,
+  usePlayers,
+  type PlayerObject
+} from './backend-manager'
 import BaseSingleSelect from './base-single-select'
 import { useMemo, useState } from 'react'
 import type { Key } from '@react-types/shared'
@@ -72,6 +80,26 @@ const AdminPlayerProfile = () => {
     )
   }
 
+  const renderActiveMembershipCell = (p: PlayerObject) => {
+    const resolvedMembership = resolveMembership(p)
+    const color =
+      resolvedMembership.type == MembershipType.MANGAN
+        ? 'warning'
+        : resolvedMembership.type == MembershipType.TANYAO
+          ? 'primary'
+          : 'default'
+    return (
+      <div className="w-full">
+        <Chip color={color} size="sm">
+          {MembershipTypeText[resolvedMembership.type]}
+        </Chip>
+        {resolvedMembership.expire && (
+          <span className="ml-2">({formatDate(resolvedMembership.expire)})</span>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="w-full">
       <div className="w-full">
@@ -103,7 +131,7 @@ const AdminPlayerProfile = () => {
               <TableRow key={`player-${p.id}`}>
                 <TableCell>{p.id}</TableCell>
                 <TableCell>{p.name}</TableCell>
-                <TableCell>{summarizeMembershipStatus(resolveMembership(p))}</TableCell>
+                <TableCell>{renderActiveMembershipCell(p)}</TableCell>
                 <TableCell>{p.email}</TableCell>
               </TableRow>
             )}

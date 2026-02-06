@@ -4,6 +4,7 @@ import {
   ActivityTypeText,
   formatDate,
   formatTime,
+  revertActivityLog,
   useActivityLogs,
   usePlayers,
   type ActivityLogData,
@@ -11,9 +12,10 @@ import {
   type PlayersMap
 } from './backend-manager'
 import { CalendarDate } from '@internationalized/date'
-import { useMemo, useState, type Key } from 'react'
+import { useEffect, useMemo, useState, type Key } from 'react'
 import { Icon } from '@iconify/react'
 import {
+  Button,
   Chip,
   Table,
   TableBody,
@@ -24,10 +26,14 @@ import {
 } from '@heroui/react'
 import BaseSingleSelect from './base-single-select'
 import PlayerSelect from './player-select'
+import { useQueryClient } from '@tanstack/react-query'
+import useConfirm from './confirm-modal'
 
 type ActivityLogsTableProps = {
   start: CalendarDate
   end: CalendarDate
+  actionCount: number
+  setActionCount: (value: React.SetStateAction<number>) => void
 }
 
 function createPaymentSummary(log: ActivityLogData): string {
@@ -42,7 +48,9 @@ function createPaymentSummary(log: ActivityLogData): string {
 }
 
 function renderActivityTableCell(log: ActivityLogData, players: PlayersMap | null | undefined) {
+  console.log('START')
   if (log && players) {
+    console.log('DATA IS READY')
     if (log.activity == ActivityType.SIGN_IN) {
       return (
         <div className="flex flex-col gap-1">
@@ -71,6 +79,7 @@ function renderActivityTableCell(log: ActivityLogData, players: PlayersMap | nul
 }
 
 const ActivityLogsTable = (props: ActivityLogsTableProps) => {
+  const { ask, ConfirmModal } = useConfirm()
   const availableActivityFilters = [{ id: 'ALL', selectText: 'All' }].concat(
     Object.entries(ActivityTypeText).map(([key, val]) => {
       return { id: key, selectText: val }
@@ -78,8 +87,16 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
   )
   const [activityFilter, setActivityFilter] = useState(availableActivityFilters[0])
   const [playerFilter, setPlayerFilter] = useState<PlayerObject | null>()
-  const { data: players, isPending: isPlayerssPending } = usePlayers()
-  const { data: activityLogs, isFetching } = useActivityLogs(props.start, props.end)
+  const { data: players, isFetching: isPlayersFetching } = usePlayers()
+  const { data: activityLogs, isFetching: isActivityLogsFecthing } = useActivityLogs(
+    props.start,
+    props.end
+  )
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['activityLogs', props.start, props.end] })
+  }, [props.actionCount])
+
   const filteredActiveityLogs = useMemo(() => {
     if (!activityLogs) {
       return []
@@ -94,6 +111,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
       return true
     })
   }, [activityLogs, activityFilter, playerFilter])
+  const queryClient = useQueryClient()
 
   const topContent = () => {
     return (
@@ -128,15 +146,16 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
     )
   }
 
+  if (isPlayersFetching || isActivityLogsFecthing) {
+    return (
+      <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
+        <Spinner label="Updating..." color="success" size="lg" />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full overflow-x-auto mt-3 min-h-[400px]">
-      {/* Show Spinner when fecthing */}
-      {isFetching && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-          <Spinner label="Updating..." color="success" size="lg" />
-        </div>
-      )}
-
       <Table
         aria-label="admin-player-profile-table"
         layout="fixed"
@@ -166,19 +185,32 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
               </TableCell>
               <TableCell className="py-1">{renderActivityTableCell(log, players)}</TableCell>
               <TableCell>
-                <button
-                  className="p-2 hover:bg-default-100 rounded-full"
-                  onClick={() => {
-                    console.log('!!! clicked on ', log.id)
+                <Button
+                  isIconOnly
+                  onPress={async () => {
+                    if (
+                      await ask({
+                        title: `Sure delete activity log?`,
+                        messages: [
+                          `[${players![log.playerId]?.name}] [${log.activity}] [${log.payment.type} $${log.payment.price}]`
+                        ],
+                        confirmText: 'Delete',
+                        type: 'danger'
+                      })
+                    ) {
+                      await revertActivityLog(log.id)
+                      props.setActionCount(props.actionCount + 1) // trigger refresh
+                    }
                   }}
                 >
                   <Icon icon="material-symbols:delete" className="w-4 h-4" color="red" />
-                </button>
+                </Button>
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+      <ConfirmModal />
     </div>
   )
 }

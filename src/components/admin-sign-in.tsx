@@ -6,9 +6,13 @@ import { useLocalStorage } from 'usehooks-ts'
 import ActivityLogsStats from './activity-logs-stats'
 import {
   AdminOpType,
-  type LocationType,
-  type MembershipOperationType,
-  type PaymentType,
+  alertWithToast,
+  LocationType,
+  PaymentType,
+  resolveMembership,
+  resolvePriceFromSchema,
+  signInPlayer,
+  useMembershipTiers,
   type PlayerObject,
   type QueueType
 } from './backend-manager'
@@ -19,17 +23,16 @@ import MembershipOperationButtonGroup from './membership-operation-button-group'
 import PlayerSelect from './player-select'
 import DividerWithText from './divider-with-text'
 import AdminOpButtonGroup from './admin-op-button-group'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 
 const AdminSignIn = () => {
-  const [storedRange, setStoredRange] = useLocalStorage('activity-logs-date-range', {
-    start: today(getLocalTimeZone()).toString(),
-    end: today(getLocalTimeZone()).toString()
+  const queryClient = useQueryClient()
+  const [actionCount, setActionCount] = useState<number>(0)
+  const [dateRange, setDateRange] = useState({
+    start: today(getLocalTimeZone()),
+    end: today(getLocalTimeZone())
   })
-  const dateRange = {
-    start: parseDate(storedRange.start),
-    end: parseDate(storedRange.end)
-  }
   const [selectedPlayer, setSelectedPlayer] = useLocalStorage<PlayerObject | null>(
     'admin-signin-player',
     null
@@ -50,16 +53,98 @@ const AdminSignIn = () => {
     'admin-op',
     AdminOpType.SIGN_IN
   )
-  const [selectedMembershipOperation, setSelectedMembershipOperation] =
-    useLocalStorage<MembershipOperationType | null>('admin-signin-membership-operation', null)
+
+  const { data: availableMembershipTiers, isPending: isAvailableMembershipTiersPending } =
+    useMembershipTiers()
+
+  const [selectedMembershipOperation, setSelectedMembershipOperation] = useLocalStorage<
+    string | null
+  >('admin-signin-membership-operation', null)
+
+  const resolvedPrice = useMemo(() => {
+    if (isAvailableMembershipTiersPending) {
+      return null
+    }
+    if (selectedPayment == PaymentType.VOUCHER || selectedPayment == PaymentType.WAIVED) {
+      return 0
+    }
+    if (selectedAdminOp == AdminOpType.SIGN_IN) {
+      const key = selectedLocation == LocationType.KOP ? 'SINGLE_VISIT_KOP' : 'SINGLE_VISIT'
+      return resolvePriceFromSchema(availableMembershipTiers[key]?.priceSchema ?? [])
+    } else if (selectedAdminOp == AdminOpType.MEMBERSHIP) {
+      return resolvePriceFromSchema(
+        availableMembershipTiers[selectedMembershipOperation!]?.priceSchema ?? []
+      )
+    } else if (selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) {
+      if (selectedMembershipOperation == 'SINGLE_VISIT') {
+        const key = selectedLocation == LocationType.KOP ? 'SINGLE_VISIT_KOP' : 'SINGLE_VISIT'
+        return resolvePriceFromSchema(availableMembershipTiers[key]?.priceSchema ?? [])
+      } else {
+        return resolvePriceFromSchema(
+          availableMembershipTiers[selectedMembershipOperation!]?.priceSchema ?? []
+        )
+      }
+    }
+    return 0
+  }, [
+    availableMembershipTiers,
+    selectedAdminOp,
+    selectedLocation,
+    selectedPayment,
+    selectedMembershipOperation
+  ])
 
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async () => {
-    console.log('>>> submitting')
-    setSelectedPayment(null)
-    setSelectedPlayer(null)
+    if (!selectedAdminOp) {
+      alertWithToast('warning', `Invalid Operation ${selectedAdminOp}`)
+      return
+    }
+    if (!selectedPayment) {
+      alertWithToast('warning', `Invalid Payment ${selectedPayment}`)
+      return
+    }
+    if (resolvedPrice == null) {
+      alertWithToast('warning', `Cannot Resolve Price ${resolvedPrice}`)
+      return
+    }
+    if (selectedAdminOp == AdminOpType.SIGN_IN) {
+      if (!selectedLocation) {
+        alertWithToast('warning', `Invalid Location ${selectedLocation}`)
+        return
+      }
+      if (!selectedPlayer) {
+        alertWithToast('warning', `Invalid Player ${selectedPlayer}`)
+        return
+      }
+      const activeMembership = resolveMembership(selectedPlayer)
+      const x = signInPlayer(
+        selectedPlayer,
+        activeMembership.type,
+        selectedPayment,
+        selectedLocation,
+        resolvedPrice,
+        selectedQueue
+      )
+      alertWithToast('success', '')
+      setActionCount((prev) => prev + 1)
+    } else if (selectedAdminOp == AdminOpType.MEMBERSHIP) {
+      if (!selectedPlayer) {
+        alertWithToast('warning', `Invalid Player ${selectedPlayer}`)
+        return
+      }
+      if (!selectedMembershipOperation) {
+        alertWithToast('warning', `Invalid Membership ${selectedMembershipOperation}`)
+        return
+      }
+    } else if (selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) {
+    }
   }
+
+  useEffect(() => {
+    setSelectedMembershipOperation(null)
+  }, [selectedAdminOp])
 
   return (
     <div className="w-full">
@@ -99,6 +184,8 @@ const AdminSignIn = () => {
                   onSelectionChange={setSelectedPlayer}
                   label=""
                   variant="faded"
+                  showActiveMembership={true}
+                  showSigninStatus={true}
                 />
               </div>
             </div>
@@ -139,6 +226,11 @@ const AdminSignIn = () => {
               allowUnselect={true}
             />
           </div>
+
+          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+            <span className="text-sm font-medium md:min-w-[100px]">Cost (Fee Excluded)</span>
+            <span>{resolvedPrice}</span>
+          </div>
         </div>
         <Button type="submit" color="primary" className="px-6 font-bold" isLoading={isSubmitting}>
           Submit
@@ -154,9 +246,9 @@ const AdminSignIn = () => {
           value={dateRange}
           onChange={(val) => {
             if (val) {
-              setStoredRange({
-                start: val.start.toString(),
-                end: val.end.toString()
+              setDateRange({
+                start: val.start,
+                end: val.end
               })
             }
           }}
@@ -167,7 +259,12 @@ const AdminSignIn = () => {
       </div>
       <Divider className="my-3" />
       <div className="w-full overflow-x-auto">
-        <ActivityLogsTable start={dateRange.start} end={dateRange.end} />
+        <ActivityLogsTable
+          start={dateRange.start}
+          end={dateRange.end}
+          actionCount={actionCount}
+          setActionCount={setActionCount}
+        />
       </div>
     </div>
   )

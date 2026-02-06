@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import { addToast, type CalendarDate } from '@heroui/react'
-import type { Key } from 'react'
 
 export interface GcpTimestamp {
   _seconds: number
@@ -25,15 +24,11 @@ export const MembershipType = {
 
 export type MembershipType = (typeof MembershipType)[keyof typeof MembershipType]
 
-export const MembershipOperationType = {
-  TANYAO: 'Tanyao', // null to tanyao
-  MANGAN: 'Mangan', // null to mangan
-  TAN2MAN: 'Tan2Man', // tanyao to mangan
-  SINGLE_VISIT: 'SingleVisit' // non-member single visit
+export const MembershipTypeText = {
+  [MembershipType.TANYAO]: 'Tanyao',
+  [MembershipType.MANGAN]: 'Mangan',
+  [MembershipType.NON_MEMBER]: 'NonMember'
 } as const
-
-export type MembershipOperationType =
-  (typeof MembershipOperationType)[keyof typeof MembershipOperationType]
 
 export const AdminOpType = {
   SIGN_IN: 'SignIn',
@@ -276,12 +271,6 @@ export const PLACEMENT_TEXT: { [key: string]: string } = {
   4: '4th'
 }
 
-export const MEMBERSHIP_TYPES_TEXT: { [key: string]: string } = {
-  TANYAO: 'Tanyao',
-  MANGAN: 'Mangan',
-  NON_MEMBER: 'NonMember'
-}
-
 export function convertGcpTimestampToDate(timestamp: GcpTimestamp | null): Date | null {
   if (!timestamp) {
     return timestamp
@@ -357,7 +346,30 @@ export async function fetchRulesets(): Promise<RulesetObject[]> {
 }
 
 export const useRulesets = () => {
-  return useQuery({ queryKey: ['rulesets'], queryFn: fetchRulesets })
+  return useQuery({
+    queryKey: ['rulesets'],
+    queryFn: fetchRulesets,
+    staleTime: 1000 * 60 * 60 * 24 /*1d*/
+  })
+}
+
+/**
+ * Fetches membership tier data from backend. This includes single visit.
+ *
+ * @returns Fetched membership tiers.
+ */
+export async function fetchMembershipTiers(): Promise<any> {
+  const dataToPost = { action: 'load_membership_tiers' }
+  const response = await axios.post(BACKEND_URL, dataToPost)
+  return response.data
+}
+
+export const useMembershipTiers = () => {
+  return useQuery({
+    queryKey: ['membership_tiers'],
+    queryFn: fetchMembershipTiers,
+    staleTime: 1000 * 60 * 60 * 24 /*1d*/
+  })
 }
 
 /**
@@ -661,4 +673,61 @@ export function summarizeMembershipStatus(membership: {
   } else {
     return `${membership.type} (${formatDate(membership.expire)})`
   }
+}
+
+/**
+ * resovle the price of a target date given a price schema.
+ *
+ */
+export function resolvePriceFromSchema(
+  priceSchema: { price: number; startTime: GcpTimestamp }[],
+  timestamp?: Date
+): number | null {
+  const targetDate = timestamp ?? new Date()
+  for (let i = 0; i < priceSchema.length; ++i) {
+    // reach the last item
+    if (i == priceSchema.length - 1) {
+      // If the last item has start date later than target date, the target date price is unknown.
+      if (convertGcpTimestampToDate(priceSchema[i].startTime)!.getTime() > targetDate.getTime()) {
+        return null
+      }
+      return priceSchema[i].price
+    }
+    // not the last item
+    if (
+      convertGcpTimestampToDate(priceSchema[i].startTime)!.getTime() < targetDate.getTime() &&
+      convertGcpTimestampToDate(priceSchema[i + 1].startTime)!.getTime() > targetDate.getTime()
+    ) {
+      return priceSchema[i].price
+    }
+  }
+  return null
+}
+
+export async function signInPlayer(
+  player: PlayerObject,
+  currentMembership: MembershipType,
+  paymentType: PaymentType,
+  location: LocationType,
+  price: number,
+  queue: QueueType | null
+) {
+  const dataToPost = {
+    action: 'signin_player',
+    player_id: player.id,
+    current_membership: currentMembership,
+    payment_type: paymentType,
+    location: location,
+    price: price,
+    queue: queue
+  }
+  return await axios.post(BACKEND_URL, dataToPost)
+}
+
+export async function revertActivityLog(id: string) {
+  const dataToPost = {
+    action: 'revert_activity_log',
+    log_id: id
+  }
+  return await axios.post(BACKEND_URL, dataToPost)
 }

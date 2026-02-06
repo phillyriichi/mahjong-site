@@ -1,25 +1,37 @@
-import { type Key } from 'react'
+import { useMemo, type Key } from 'react'
 import ToggleButtonGroup from './toggle-button-group'
-import { MembershipOperationType } from './backend-manager'
+import { useMembershipTiers } from './backend-manager'
 
 type MembershipOperationButtonGroupProps = {
-  membershipOperation: MembershipOperationType | null
-  setMembershipOperation: (membershipOperation: MembershipOperationType) => void
+  membershipOperation: string | null
+  setMembershipOperation: (membershipOperation: string) => void
   firstTimeVisit: boolean
 }
 
 const MembershipOperationButtonGroup = (props: MembershipOperationButtonGroupProps) => {
-  const options = Object.values(MembershipOperationType)
-    .filter((item) => {
-      if (props.firstTimeVisit) {
-        return item != MembershipOperationType.TAN2MAN
-      } else {
-        return item != MembershipOperationType.SINGLE_VISIT
-      }
-    })
-    .map((item) => {
-      return { id: item, label: item }
-    })
+  const { data, isPending } = useMembershipTiers()
+
+  const options = useMemo(() => {
+    if (isPending) {
+      return []
+    }
+    return Object.entries(data)
+      .filter(([key, _]: any) => {
+        if (key == 'SINGLE_VISIT_KOP') {
+          return false
+        }
+        console.log('>>> ', props.firstTimeVisit, key)
+        if (props.firstTimeVisit) {
+          return key != 'TANYAO2MANGAN'
+        } else {
+          return key != 'SINGLE_VISIT'
+        }
+      })
+      .map(([key, val]: any) => {
+        return { id: key, label: key, labelText: val.name }
+      })
+  }, [data, props.firstTimeVisit])
+
   return (
     <div className="w-full">
       <ToggleButtonGroup
@@ -28,7 +40,7 @@ const MembershipOperationButtonGroup = (props: MembershipOperationButtonGroupPro
         onSelectionChange={(membershipOperation: Key, checked: boolean) => {
           if (checked) {
             if (!membershipOperation || membershipOperation != props.membershipOperation) {
-              props.setMembershipOperation(membershipOperation as MembershipOperationType)
+              props.setMembershipOperation(membershipOperation as string)
             }
           }
         }}

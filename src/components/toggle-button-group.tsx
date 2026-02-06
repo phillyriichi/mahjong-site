@@ -2,7 +2,7 @@ import { Button, ButtonGroup } from '@heroui/react'
 import { type Key } from 'react'
 
 type ToggleButtonGroupProps = {
-  options: { id: Key; label: string }[]
+  options: { id: Key; label: string; labelText?: string }[]
   selectedKeys: Key[]
   onSelectionChange: (key: Key, checked: boolean) => void
   color?: 'primary' | 'default' | 'secondary' | 'success' | 'warning' | 'danger'
@@ -26,7 +26,7 @@ const ToggleButtonGroup = (props: ToggleButtonGroupProps) => {
               className={`min-w-0 ${isActive ? 'bg-primary text-white' : ''}`}
               onPress={() => toggleSelection(opt.label)}
             >
-              {opt.label}
+              {opt.labelText ?? opt.label}
             </Button>
           )
         })}

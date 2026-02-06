@@ -1,5 +1,11 @@
 import { Autocomplete, AutocompleteItem, Chip } from '@heroui/react'
-import { usePlayers, type PlayerObject } from './backend-manager'
+import {
+  MembershipType,
+  MembershipTypeText,
+  resolveMembership,
+  usePlayers,
+  type PlayerObject
+} from './backend-manager'
 import type { Key } from '@react-types/shared'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -12,12 +18,17 @@ type PlayerSelectProps = {
   label?: string
   labelPlacement?: 'inside' | 'outside' | 'outside-left' | 'outside-top'
   showSigninStatus?: boolean
+  showActiveMembership?: boolean
 }
 
 const PlayerSelect = (props: PlayerSelectProps) => {
   const [playerId, setPlayerId] = useState<Key | null>(
     props.selectedPlayer ? props.selectedPlayer.id : null
   )
+
+  const selectedPlayerActiveMembershipType = useMemo(() => {
+    return resolveMembership(props.selectedPlayer ?? null).type
+  }, [props.selectedPlayer])
 
   useEffect(() => {
     if (props.selectedPlayer) {
@@ -51,13 +62,27 @@ const PlayerSelect = (props: PlayerSelectProps) => {
         props.onSelectionChange(found ?? null)
       }}
       endContent={
-        props.showSigninStatus &&
-        props.selectedPlayer?.signedIn && (
-          <Chip size="sm" color="success">
-            {' '}
-            Signed In
-          </Chip>
-        )
+        <>
+          {props.showActiveMembership && props.selectedPlayer && (
+            <Chip
+              size="sm"
+              color={
+                selectedPlayerActiveMembershipType == MembershipType.MANGAN
+                  ? 'warning'
+                  : selectedPlayerActiveMembershipType == MembershipType.TANYAO
+                    ? 'primary'
+                    : 'default'
+              }
+            >
+              {MembershipTypeText[selectedPlayerActiveMembershipType]}
+            </Chip>
+          )}
+          {props.showSigninStatus && props.selectedPlayer?.signedIn && (
+            <Chip size="sm" color="success">
+              Signed In
+            </Chip>
+          )}
+        </>
       }
     >
       {filteredPlayers &&
@@ -76,7 +101,6 @@ const PlayerSelect = (props: PlayerSelectProps) => {
                 props.showSigninStatus &&
                 item?.signedIn && (
                   <Chip size="sm" color="success">
-                    {' '}
                     Signed In
                   </Chip>
                 )
