@@ -193,17 +193,18 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
   }, [activityLogs])
 
   const topContent = () => {
+    if (isFetching) {
+      return (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
+          <Spinner label="Loading..." color="success" size="lg" />
+        </div>
+      )
+    }
     return <div></div>
   }
 
   return (
     <div className="w-full mt-3">
-      {isFetching && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-          <Spinner label="Updating..." color="success" size="lg" />
-        </div>
-      )}
-
       <Table
         aria-label="admin-player-profile-table"
         layout="auto"

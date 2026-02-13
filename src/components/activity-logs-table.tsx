@@ -48,9 +48,7 @@ function createPaymentSummary(log: ActivityLogData): string {
 }
 
 function renderActivityTableCell(log: ActivityLogData, players: PlayersMap | null | undefined) {
-  console.log('START')
   if (log && players) {
-    console.log('DATA IS READY')
     if (log.activity == ActivityType.SIGN_IN) {
       return (
         <div className="flex flex-col gap-1">
@@ -114,6 +112,14 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
   const queryClient = useQueryClient()
 
   const topContent = () => {
+    if (isPlayersFetching || isActivityLogsFecthing) {
+      return (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
+          <Spinner label="Loading..." color="success" size="lg" />
+        </div>
+      )
+    }
+
     return (
       <div>
         <div className="w-full row flex">
@@ -142,14 +148,6 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
         <div className="w-full row flex my-2">
           <Chip color="default">Count: {filteredActiveityLogs.length}</Chip>
         </div>
-      </div>
-    )
-  }
-
-  if (isPlayersFetching || isActivityLogsFecthing) {
-    return (
-      <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-        <Spinner label="Updating..." color="success" size="lg" />
       </div>
     )
   }
@@ -187,10 +185,11 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
               <TableCell>
                 <Button
                   isIconOnly
+                  className="bg-transparent"
                   onPress={async () => {
                     if (
                       await ask({
-                        title: `Sure delete activity log?`,
+                        title: `Sure to delete log?`,
                         messages: [
                           `[${players![log.playerId]?.name}] [${log.activity}] [${log.payment.type} $${log.payment.price}]`
                         ],

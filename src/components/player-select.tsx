@@ -15,10 +15,12 @@ type PlayerSelectProps = {
   className?: string
   signedinOnly?: boolean
   variant?: 'flat' | 'bordered' | 'faded' | 'underlined'
+  size?: 'sm' | 'md' | 'lg'
   label?: string
   labelPlacement?: 'inside' | 'outside' | 'outside-left' | 'outside-top'
   showSigninStatus?: boolean
   showActiveMembership?: boolean
+  placeholder?: string
 }
 
 const PlayerSelect = (props: PlayerSelectProps) => {
@@ -40,22 +42,30 @@ const PlayerSelect = (props: PlayerSelectProps) => {
 
   const { data: availablePlayers, isPending } = usePlayers()
 
-  const filteredPlayers = useMemo(() => {
+  const sortedPlayers = useMemo(() => {
     if (!availablePlayers) return []
-    return Object.values(availablePlayers).filter((item) => {
-      return props.signedinOnly ? !!item.signedIn : true
+    return Object.values(availablePlayers).toSorted((a, b) => {
+      return a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
     })
   }, [availablePlayers, props.signedinOnly])
+
+  const filteredPlayers = useMemo(() => {
+    if (!sortedPlayers) return []
+    return sortedPlayers.filter((item) => {
+      return props.signedinOnly ? !!item.signedIn : true
+    })
+  }, [sortedPlayers])
 
   return (
     <Autocomplete
       variant={props.variant ?? 'underlined'}
-      size="sm"
+      size={props.size ?? 'sm'}
       className={props.className ?? 'max-w-xs'}
       label={props.label ?? 'Player'}
       labelPlacement={props.labelPlacement ?? 'inside'}
       isLoading={isPending}
       selectedKey={playerId?.toString() ?? undefined}
+      placeholder={props.placeholder ?? ''}
       onSelectionChange={(key) => {
         setPlayerId(key)
         const found = filteredPlayers.find((p) => p.id.toString() === key?.toString())

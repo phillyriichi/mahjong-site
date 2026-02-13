@@ -12,11 +12,7 @@ import {
 } from './backend-manager'
 import { useQueryClient } from '@tanstack/react-query'
 
-type PlayerUpdateInputFormProps = {
-  variant?: 'flat' | 'bordered' | 'faded' | 'underlined'
-}
-
-const PlayerUpdateInputForm = (props: PlayerUpdateInputFormProps) => {
+const PlayerUpdateInputForm = () => {
   const [player, setPlayer] = useState<PlayerObject | null>(null)
   const [updatedPlayerName, setUpdatedPlayerName] = useState<string>('')
   const [updatedPlayerEmail, setUpdatedPlayerEmail] = useState<string>('')
@@ -69,31 +65,48 @@ const PlayerUpdateInputForm = (props: PlayerUpdateInputFormProps) => {
           setIsSubmitting(false)
         }}
       >
-        <PlayerSelect
-          selectedPlayer={player}
-          onSelectionChange={(player: PlayerObject | null) => {
-            setPlayer(player)
-            setUpdatedPlayerName(player?.name ?? '')
-            setUpdatedPlayerEmail(player?.email ?? '')
-          }}
-          label="Player"
-          variant={props.variant ?? 'bordered'}
-        />
-        <Input
-          className="max-w-xs"
-          label="Updated Name"
-          variant={props.variant ?? 'bordered'}
-          value={updatedPlayerName}
-          onValueChange={setUpdatedPlayerName}
-        />
-        <Input
-          className="max-w-xs"
-          label="Updated Email"
-          type="email"
-          variant={props.variant ?? 'bordered'}
-          value={updatedPlayerEmail}
-          onValueChange={setUpdatedPlayerEmail}
-        />
+        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+          <span className="text-sm font-medium md:min-w-[100px]">Player</span>
+          <div className="flex-1 max-w-sm">
+            <PlayerSelect
+              selectedPlayer={player}
+              onSelectionChange={(player: PlayerObject | null) => {
+                setPlayer(player)
+                setUpdatedPlayerName(player?.name ?? '')
+                setUpdatedPlayerEmail(player?.email ?? '')
+              }}
+              label=""
+              variant="faded"
+              showActiveMembership={true}
+              showSigninStatus={true}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+          <span className="text-sm font-medium md:min-w-[100px]">Player Name</span>
+          <div className="flex-1 max-w-sm">
+            <Input
+              className="max-w-xs"
+              label=""
+              placeholder="Updated Name"
+              value={updatedPlayerName}
+              onValueChange={setUpdatedPlayerName}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+          <span className="text-sm font-medium md:min-w-[100px]">Player Email</span>
+          <div className="flex-1 max-w-sm">
+            <Input
+              className="max-w-xs"
+              label=""
+              placeholder="Updated Email"
+              type="email"
+              value={updatedPlayerEmail}
+              onValueChange={setUpdatedPlayerEmail}
+            />
+          </div>
+        </div>
 
         <div className="ml-2">
           {(player?.membership ?? [])
@@ -104,7 +117,13 @@ const PlayerUpdateInputForm = (props: PlayerUpdateInputFormProps) => {
               <div>{`${summarizeMembershipStatus(item)}`}</div>
             ))}
         </div>
-        <Button type="submit" color="primary" className="px-6 font-bold" isLoading={isSubmitting}>
+        <Button
+          type="submit"
+          color="primary"
+          size="sm"
+          className="px-6 font-bold"
+          isLoading={isSubmitting}
+        >
           Update
         </Button>
       </Form>

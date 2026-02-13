@@ -1,17 +1,20 @@
 import { Button, DateRangePicker, Divider, Input } from '@heroui/react'
-import { getLocalTimeZone, parseDate, today } from '@internationalized/date'
+import { getLocalTimeZone, today } from '@internationalized/date'
 import { Form } from '@heroui/form'
 import ActivityLogsTable from './activity-logs-table'
 import { useLocalStorage } from 'usehooks-ts'
 import ActivityLogsStats from './activity-logs-stats'
 import {
+  addNewPlayer,
   AdminOpType,
   alertWithToast,
   LocationType,
+  MembershipType,
   PaymentType,
   resolveMembership,
   resolvePriceFromSchema,
   signInPlayer,
+  updatePlayerMembership,
   useMembershipTiers,
   type PlayerObject,
   type QueueType
@@ -25,6 +28,7 @@ import DividerWithText from './divider-with-text'
 import AdminOpButtonGroup from './admin-op-button-group'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import useConfirm from './confirm-modal'
 
 const AdminSignIn = () => {
   const queryClient = useQueryClient()
@@ -33,33 +37,24 @@ const AdminSignIn = () => {
     start: today(getLocalTimeZone()),
     end: today(getLocalTimeZone())
   })
-  const [selectedPlayer, setSelectedPlayer] = useLocalStorage<PlayerObject | null>(
-    'admin-signin-player',
-    null
-  )
-  const [selectedLocation, setSelectedLocation] = useLocalStorage<LocationType | null>(
-    'admin-signin-location',
-    null
-  )
-  const [selectedPayment, setSelectedPayment] = useLocalStorage<PaymentType | null>(
-    'admin-signin-payment',
-    null
-  )
-  const [selectedQueue, setSelectedQueue] = useLocalStorage<QueueType | null>(
-    'admin-signin-queue',
-    null
-  )
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerObject | null>(null)
+  const [newPlayerName, setNewPlyaerName] = useState<string>('')
+  const [newPlayerEmail, setNewPlyaerEmail] = useState<string>('')
+  const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null)
+  const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null)
+  const [selectedQueue, setSelectedQueue] = useState<QueueType | null>(null)
   const [selectedAdminOp, setSelectedAdminOp] = useLocalStorage<AdminOpType>(
     'admin-op',
     AdminOpType.SIGN_IN
   )
+  const { ask, ConfirmModal } = useConfirm()
 
   const { data: availableMembershipTiers, isPending: isAvailableMembershipTiersPending } =
     useMembershipTiers()
 
-  const [selectedMembershipOperation, setSelectedMembershipOperation] = useLocalStorage<
-    string | null
-  >('admin-signin-membership-operation', null)
+  const [selectedMembershipOperation, setSelectedMembershipOperation] = useState<string | null>(
+    null
+  )
 
   const resolvedPrice = useMemo(() => {
     if (isAvailableMembershipTiersPending) {
@@ -97,6 +92,7 @@ const AdminSignIn = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async () => {
+    // general validations
     if (!selectedAdminOp) {
       alertWithToast('warning', `Invalid Operation ${selectedAdminOp}`)
       return
@@ -110,6 +106,7 @@ const AdminSignIn = () => {
       return
     }
     if (selectedAdminOp == AdminOpType.SIGN_IN) {
+      // handle sign-in operation
       if (!selectedLocation) {
         alertWithToast('warning', `Invalid Location ${selectedLocation}`)
         return
@@ -119,7 +116,18 @@ const AdminSignIn = () => {
         return
       }
       const activeMembership = resolveMembership(selectedPlayer)
-      const x = signInPlayer(
+      if (activeMembership.type == MembershipType.NON_MEMBER) {
+        const confirmed = await ask({
+          title: 'Warning',
+          messages: [
+            `${selectedPlayer.name} does not have active membership, are you sure to sign them in with Non-Member?`
+          ]
+        })
+        if (!confirmed) {
+          return
+        }
+      }
+      const rst: { success: boolean; msg?: string } = await signInPlayer(
         selectedPlayer,
         activeMembership.type,
         selectedPayment,
@@ -127,9 +135,14 @@ const AdminSignIn = () => {
         resolvedPrice,
         selectedQueue
       )
-      alertWithToast('success', '')
+      if (!rst.success) {
+        alertWithToast('danger', rst.msg ?? '')
+        return
+      }
+      alertWithToast('success', `${selectedPlayer.name} is signed in.`)
       setActionCount((prev) => prev + 1)
     } else if (selectedAdminOp == AdminOpType.MEMBERSHIP) {
+      // handle membership operations
       if (!selectedPlayer) {
         alertWithToast('warning', `Invalid Player ${selectedPlayer}`)
         return
@@ -138,7 +151,47 @@ const AdminSignIn = () => {
         alertWithToast('warning', `Invalid Membership ${selectedMembershipOperation}`)
         return
       }
+      const activeMembership = resolveMembership(selectedPlayer)
+      const rst: { success: boolean; msg?: string } = await updatePlayerMembership(
+        selectedPlayer,
+        activeMembership.type,
+        selectedMembershipOperation,
+        selectedPayment,
+        resolvedPrice,
+        selectedQueue
+      )
+      if (!rst.success) {
+        alertWithToast('danger', rst.msg ?? '')
+        return
+      }
+      alertWithToast('success', `${selectedMembershipOperation} granted to ${selectedPlayer.name}`)
+      setActionCount((prev) => prev + 1)
     } else if (selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) {
+      // handle first time visit player
+      if (newPlayerName.length == 0) {
+        alertWithToast('warning', 'New player name cannot be empty')
+      }
+      if (!selectedMembershipOperation) {
+        alertWithToast('warning', `Invalid Membership ${selectedMembershipOperation}`)
+        return
+      }
+      const rst: { success: boolean; message?: string } = await addNewPlayer(
+        newPlayerName,
+        newPlayerEmail,
+        selectedMembershipOperation,
+        selectedPayment,
+        resolvedPrice,
+        selectedQueue
+      )
+      if (!rst.success) {
+        alertWithToast('danger', rst.message ?? '')
+        return
+      }
+      alertWithToast('success', `Added ${newPlayerName} for ${selectedMembershipOperation}`)
+      setActionCount((prev) => prev + 1)
+      queryClient.invalidateQueries({ queryKey: ['players'] })
+    } else {
+      alertWithToast('danger', `Invalid oepration ${selectedAdminOp}`)
     }
   }
 
@@ -194,17 +247,31 @@ const AdminSignIn = () => {
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
                 <span className="text-sm font-medium md:min-w-[100px]">Player Name</span>
                 <div className="flex-1 max-w-sm">
-                  <Input label="" />
+                  <Input
+                    label=""
+                    placeholder="e.g. Ichihime M."
+                    value={newPlayerName}
+                    onValueChange={setNewPlyaerName}
+                  />
                 </div>
               </div>
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
                 <span className="text-sm font-medium md:min-w-[100px]">Player Email</span>
                 <div className="flex-1 max-w-sm">
-                  <Input type="email" label="" />
+                  <Input
+                    type="email"
+                    label=""
+                    placeholder="e.g. ichihime@gmail.com"
+                    value={newPlayerEmail}
+                    onValueChange={setNewPlyaerEmail}
+                  />
                 </div>
               </div>
             </>
           )}
+
+          {newPlayerName}
+          {newPlayerEmail}
 
           {(selectedAdminOp == AdminOpType.MEMBERSHIP ||
             selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) && (
@@ -227,15 +294,16 @@ const AdminSignIn = () => {
             />
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-8">
             <span className="text-sm font-medium md:min-w-[100px]">Cost (Fee Excluded)</span>
-            <span>{resolvedPrice}</span>
+            <span>${resolvedPrice}</span>
           </div>
         </div>
         <Button type="submit" color="primary" className="px-6 font-bold" isLoading={isSubmitting}>
           Submit
         </Button>
       </Form>
+      <ConfirmModal />
 
       <DividerWithText text={'Activity Stats and Logs'} className="flex items-center w-full my-3" />
       <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">

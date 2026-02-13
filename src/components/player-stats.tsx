@@ -495,6 +495,7 @@ const PlayerStats = (props: PlayerStatsProps) => {
           ruleset={selectedRuleset}
           selectedSeason={selectedSeason}
           onSelectionChange={setSelectedSeason}
+          hasFullHistory={true}
         />
         <PlayerSelect
           className="w-full"

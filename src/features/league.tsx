@@ -15,17 +15,16 @@ import {
 } from '../components/backend-manager'
 import RulesetSelect from '../components/ruleset-select'
 import SeasonSelect from '../components/season-select'
+import LegaueSelfQueue from '../components/league-self-queue'
+import { useState } from 'react'
 
 const League = () => {
   const [selectedTab, setSelectedTab] = useLocalStorage<string>(
     'league-selected-tab',
     'league-ranking-tab'
   )
-  const [ruleset, setRuleset] = useLocalStorage<RulesetObject | null>(
-    'league-ranking-ruleset',
-    null
-  )
-  const [season, setSeason] = useLocalStorage<SeasonObject | null>('league-ranking-season', null)
+  const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
+  const [season, setSeason] = useState<SeasonObject | null>(null)
 
   const header = (hasSeason: boolean = true) => {
     return (
@@ -76,7 +75,7 @@ const League = () => {
               >
                 <Tab key="league-queue-tab" title="Queue">
                   <div key="league-queue" className="w-full">
-                    QUEUE
+                    <LegaueSelfQueue />
                   </div>
                 </Tab>
                 <Tab key="league-score-entry-tab" title="Score Entry">

@@ -52,7 +52,7 @@ const GameLogsTable = (props: GameLogsTableProps) => {
   const [editModalGameLog, setEditModalGameLog] = useState<GameLog>(DEFAULT_GAME_LOG)
   // process -- The logs are already sorted by timestamp. we need to convert log object to an array form 1st to 4th
   const processedData = useMemo(() => {
-    if (isFetching || availablePlayersIsPending) {
+    if (!data || availablePlayersIsPending) {
       return []
     }
     return data.games
@@ -157,7 +157,6 @@ const GameLogsTable = (props: GameLogsTableProps) => {
               variant="light"
               color="primary"
               onPress={() => {
-                console.log('Editing ', log.id)
                 setEditModalGameLog({ ...log })
                 onEditModalOpen()
               }}

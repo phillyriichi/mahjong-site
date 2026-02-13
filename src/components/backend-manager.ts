@@ -58,7 +58,9 @@ export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 export const QueueType = {
   LEAGUE: 'League',
   FLEXIBLE: 'Flexible',
-  CASUAL: 'Casual'
+  CASUAL: 'Casual',
+  STAFF: 'Staff',
+  BREAK: 'Break'
 } as const
 
 export type QueueType = (typeof QueueType)[keyof typeof QueueType]
@@ -159,7 +161,8 @@ export interface AggregatedRankingData {
   rankingCount: Map<number, number>
   reducedTotalScore: number
   totalChombo: number
-  totalGames: number
+  rank?: number
+  isWinner?: boolean
 }
 
 export interface PlayerOpponentStatsData {
@@ -370,6 +373,61 @@ export const useMembershipTiers = () => {
     queryFn: fetchMembershipTiers,
     staleTime: 1000 * 60 * 60 * 24 /*1d*/
   })
+}
+
+/**
+ * Fetches queued player from backend.
+ *
+ * @returns Fetched queue data
+ */
+export async function fetchQueuedPlayers(rulesetId: string): Promise<any> {
+  const dataToPost = {
+    action: 'load_queue',
+    ruleset: rulesetId
+  }
+  const response = await axios.post(BACKEND_URL, dataToPost)
+  return response.data
+}
+
+export const useQueuedPlayers = (
+  rulesetId: string | null | undefined,
+  refetchInterval: number | null = null
+) => {
+  const opts: any = {
+    queryKey: ['queuedPlayers'],
+    queryFn: async () => {
+      return fetchQueuedPlayers(rulesetId!)
+    },
+    staleTime: 1000 * 60 * 10 /*10m*/,
+    enabled: !!rulesetId
+  }
+  if (refetchInterval) {
+    opts.refetchInterval = refetchInterval
+  }
+  return useQuery(opts)
+}
+
+export async function enqueuePlayer(
+  playerId: number,
+  rulesetId: string,
+  queueLabels: { [key: string]: boolean }
+) {
+  const dataToPost = {
+    action: 'enqueue',
+    ruleset: rulesetId,
+    player: String(playerId),
+    queue_labels: queueLabels
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function dequeuePlayer(playerId: number, rulesetId: string) {
+  const dataToPost = {
+    action: 'dequeue',
+    ruleset: rulesetId,
+    player: String(playerId)
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
 }
 
 /**
@@ -721,7 +779,47 @@ export async function signInPlayer(
     price: price,
     queue: queue
   }
-  return await axios.post(BACKEND_URL, dataToPost)
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function updatePlayerMembership(
+  player: PlayerObject,
+  currentMembership: MembershipType,
+  newMembershipTier: string,
+  paymentType: PaymentType,
+  price: number,
+  queue: QueueType | null
+) {
+  const dataToPost = {
+    action: 'update_player_membership',
+    player_id: player.id,
+    current_membership: currentMembership,
+    new_membership_tier: newMembershipTier,
+    payment_type: paymentType,
+    price: price,
+    queue: queue
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function addNewPlayer(
+  newPlayerName: string,
+  newPlayerEmail: string,
+  membershipTier: string,
+  paymentType: PaymentType,
+  price: number,
+  queue: QueueType | null
+) {
+  const dataToPost = {
+    action: 'add_new_player',
+    player_name: newPlayerName,
+    player_email: newPlayerEmail,
+    membership_tier: membershipTier,
+    payment_type: paymentType,
+    price: price,
+    queue: queue
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
 }
 
 export async function revertActivityLog(id: string) {
@@ -729,5 +827,64 @@ export async function revertActivityLog(id: string) {
     action: 'revert_activity_log',
     log_id: id
   }
-  return await axios.post(BACKEND_URL, dataToPost)
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export function aggregateQueueLabels(labels: { [key: string]: boolean }): QueueType {
+  if (labels.Break) {
+    return QueueType.BREAK
+  } else if (labels.Staff) {
+    return QueueType.STAFF
+  } else if (labels.Casual && labels.League) {
+    return QueueType.FLEXIBLE
+  } else if (labels.League) {
+    return QueueType.LEAGUE
+  } else {
+    return QueueType.CASUAL
+  }
+}
+
+export function resolveQueueLabels(queue: QueueType): { [key: string]: boolean } {
+  const rst = {
+    [QueueType.LEAGUE]: false,
+    [QueueType.CASUAL]: false,
+    [QueueType.STAFF]: false,
+    [QueueType.BREAK]: false
+  }
+  if (queue == QueueType.FLEXIBLE) {
+    rst[QueueType.LEAGUE] = true
+    rst[QueueType.CASUAL] = true
+  } else {
+    rst[queue] = true
+  }
+  return rst
+}
+
+/**
+ * Assigns winner for a (ruleset, season)
+ *
+ * @param rulesetId the ruleset ID
+ * @param seasonId  the season ID
+ * @param winnerId  the winner ID, null means removing the assigned winner
+ * @returns
+ */
+export async function assignWinner(
+  rulesetId: string | null | undefined,
+  seasonId: string | null | undefined,
+  winnerId: number | null | undefined
+) {
+  if (!rulesetId || !seasonId) {
+    return { success: false, msg: `Invalid ruleset/season ID: ${rulesetId} ${seasonId}` }
+  }
+  const dataToPost = {
+    action: 'assign_winner',
+    ruleset_id: rulesetId,
+    season_id: seasonId,
+    winner_id: winnerId ?? null
+  }
+  console.log('data to post = ', dataToPost)
+  const response = (await axios.post(BACKEND_URL, dataToPost)).data
+  console.log('response = ', response)
+  const [sucecss, msg] = response
+  return { success: sucecss, msg: msg }
 }

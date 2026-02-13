@@ -20,7 +20,6 @@ const MembershipOperationButtonGroup = (props: MembershipOperationButtonGroupPro
         if (key == 'SINGLE_VISIT_KOP') {
           return false
         }
-        console.log('>>> ', props.firstTimeVisit, key)
         if (props.firstTimeVisit) {
           return key != 'TANYAO2MANGAN'
         } else {

@@ -22,16 +22,16 @@ const Admin = () => {
         <Section>
           <ConstrainedDiv>
             <PageHeader text="Admin" />
-            <Divider className="my-2" />
             {isAdmin ? (
               <div className="flex flex-col w-full">
+                <Divider className="my-2" />
                 <Tabs
                   aria-label="admin-tabs"
                   variant="light"
                   classNames={{
-                    base: 'overflow-x-auto scrollbar-hide w-full',
-                    tabList: 'flex-nowrap w-full',
-                    panel: 'flex justify-center w-full pt-10'
+                    base: 'w-full',
+                    tabList: 'w-full justify-around', // 让 Tab 标签本身均匀分布
+                    panel: 'w-full pt-10 px-0' // 移除 justify-center，确保 panel 撑满
                   }}
                   selectedKey={selectedTab}
                   onSelectionChange={(key) => setSelectedTab(key as string)}
@@ -46,7 +46,6 @@ const Admin = () => {
                     <AdminPlayerProfile />
                   </Tab>
                   <Tab key="rulesets-tab" title="Rulesets">
-                    {/* 这里的 div 会在 Tabs 下方独立一行并居中 */}
                     <div className="text-center">
                       <AdminRulesets />
                     </div>

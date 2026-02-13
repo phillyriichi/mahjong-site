@@ -4,7 +4,6 @@ import {
   MembershipType,
   MembershipTypeText,
   resolveMembership,
-  summarizeMembershipStatus,
   usePlayers,
   type PlayerObject
 } from './backend-manager'
@@ -13,6 +12,7 @@ import { useMemo, useState } from 'react'
 import type { Key } from '@react-types/shared'
 import {
   Chip,
+  Input,
   Table,
   TableBody,
   TableCell,
@@ -22,6 +22,7 @@ import {
 } from '@heroui/react'
 import PlayerUpdateInputForm from './player-update-input-form'
 import DividerWithText from './divider-with-text'
+import { Icon } from '@iconify/react'
 
 const avialbleFilters = [
   { id: 'ALL', selectText: 'All' },
@@ -33,19 +34,27 @@ const avialbleFilters = [
 const AdminPlayerProfile = () => {
   const { data: players, isLoading } = usePlayers()
   const [membershipFilter, setMembershipFilter] = useState(avialbleFilters[0])
+  const [searchFilter, setSearchFilter] = useState('')
   const filteredPlayers = useMemo(() => {
     if (!players || !membershipFilter) {
       return []
     }
     const now = new Date()
-    return Object.values(players).filter((p) => {
-      if (membershipFilter.id == 'ALL') {
+    return Object.values(players)
+      .filter((p) => {
+        if (membershipFilter.id == 'ALL') {
+          return true
+        } else {
+          return resolveMembership(p, now).type == membershipFilter.id
+        }
+      })
+      .filter((p) => {
+        if (!!searchFilter) {
+          return p.name.toLowerCase().includes(searchFilter.toLowerCase())
+        }
         return true
-      } else {
-        return resolveMembership(p, now).type == membershipFilter.id
-      }
-    })
-  }, [players, membershipFilter.id])
+      })
+  }, [players, membershipFilter.id, searchFilter])
 
   if (isLoading) {
     return (
@@ -57,25 +66,41 @@ const AdminPlayerProfile = () => {
 
   const topContent = () => {
     return (
-      <div className="w-full row">
-        <BaseSingleSelect
-          className="max-w-[50%] max-w-[200px]"
-          label="Membership Filter"
-          availableItems={avialbleFilters}
-          isLoading={false}
-          selectedKey={membershipFilter.id}
-          onSelectionChange={(key: Key) => {
-            const found = avialbleFilters.find((item) => item.id === key)
-            if (found) {
-              setMembershipFilter({ ...found })
-            } else {
-              setMembershipFilter({ ...avialbleFilters[0] })
-            }
-          }}
-        />
-        <Chip className="ml-2" color="default">
-          Count: {filteredPlayers.length}
-        </Chip>
+      <div className="w-full flex flex-col sm:flex-row sm:items-center gap-6 py-4">
+        <div className="flex items-center gap-4 flex-[8] min-w-0">
+          <BaseSingleSelect
+            className="max-w-[50%] max-w-[200px]"
+            label="Membership Filter"
+            availableItems={avialbleFilters}
+            isLoading={false}
+            selectedKey={membershipFilter.id}
+            onSelectionChange={(key: Key) => {
+              const found = avialbleFilters.find((item) => item.id === key)
+              if (found) {
+                setMembershipFilter({ ...found })
+              } else {
+                setMembershipFilter({ ...avialbleFilters[0] })
+              }
+            }}
+          />
+          <Chip className="ml-2" color="default">
+            Count: {filteredPlayers.length}
+          </Chip>
+        </div>
+
+        <div className="flex-[2] min-w-[200px]">
+          <Input
+            isClearable
+            className="w-full"
+            placeholder="Search Player"
+            size="sm"
+            startContent={<Icon icon="material-symbols:search" />}
+            onClear={() => {
+              setSearchFilter('')
+            }}
+            onValueChange={setSearchFilter}
+          />
+        </div>
       </div>
     )
   }
@@ -102,6 +127,7 @@ const AdminPlayerProfile = () => {
 
   return (
     <div className="w-full">
+      <DividerWithText text={'Update Player Info'} />
       <div className="w-full">
         <PlayerUpdateInputForm />
       </div>
