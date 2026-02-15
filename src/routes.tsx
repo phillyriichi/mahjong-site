@@ -19,7 +19,9 @@ const Routes = () => (
     <Route path={SPA_ROUTES.OLD_CITY} component={OldCity} />
     <Route path={SPA_ROUTES.KOP} component={Kop} />
     <Route path={SPA_ROUTES.ADMIN} component={Admin} />
+    <Route path={SPA_ROUTES.ADMIN_WITH_TAB} component={Admin} />
     <Route path={SPA_ROUTES.LEAGUE} component={League} />
+    <Route path={SPA_ROUTES.LEAGUE_WITH_TAB} component={League} />
     <Route path={SPA_ROUTES.HOME} component={Index} />
     // Redirects for legacy routes
     <Route path="/kop.html">

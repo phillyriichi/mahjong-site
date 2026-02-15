@@ -63,6 +63,9 @@ const AdminSignIn = () => {
     if (selectedPayment == PaymentType.VOUCHER || selectedPayment == PaymentType.WAIVED) {
       return 0
     }
+    if (!selectedLocation) {
+      return null
+    }
     if (selectedAdminOp == AdminOpType.SIGN_IN) {
       const key = selectedLocation == LocationType.KOP ? 'SINGLE_VISIT_KOP' : 'SINGLE_VISIT'
       return resolvePriceFromSchema(availableMembershipTiers[key]?.priceSchema ?? [])

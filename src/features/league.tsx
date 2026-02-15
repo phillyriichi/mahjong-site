@@ -2,8 +2,6 @@ import { PageHeader } from '../components/header'
 import Page from '../components/page'
 import ConstrainedDiv from '../components/constrained-div'
 import Section from '../components/section'
-import { useLocalStorage } from 'usehooks-ts'
-
 import { Tabs, Tab, Divider } from '@heroui/react'
 import LeagueScoreEntry from '../components/league-score-entry'
 import LeagueRankings from '../components/league-rankings'
@@ -13,12 +11,22 @@ import RulesetSelect from '../components/ruleset-select'
 import SeasonSelect from '../components/season-select'
 import LegaueSelfQueue from '../components/league-self-queue'
 import { useState } from 'react'
-import { useSearchParams } from 'wouter'
+import { useSearchParams, useParams } from 'wouter'
+
+const AVAILABLE_TABS: { [key: string]: string } = {
+  ['queue']: 'league-queue-tab',
+  ['score-entry']: 'league-score-entry-tab',
+  ['ranking']: 'league-ranking-tab',
+  ['game-logs']: 'league-game-logs-tab'
+}
 
 const League = () => {
   const [searchParams] = useSearchParams()
+  const params = useParams()
   const [selectedTab, setSelectedTab] = useState<string>(
-    `league-${searchParams.get('tab') ?? 'ranking'}-tab`
+    params.tab && AVAILABLE_TABS[params.tab]
+      ? AVAILABLE_TABS[params.tab]
+      : AVAILABLE_TABS['ranking']
   )
   const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
   const [season, setSeason] = useState<SeasonObject | null>(null)

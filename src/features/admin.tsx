@@ -3,17 +3,29 @@ import Page from '../components/page'
 import ConstrainedDiv from '../components/constrained-div'
 import Section from '../components/section'
 import LoginForm from '../components/login'
-import { useLocalStorage } from 'usehooks-ts'
-
 import { Tabs, Tab, Divider } from '@heroui/react'
 import AdminPlayerProfile from '../components/admin-player-profile'
 import AdminSignIn from '../components/admin-sign-in'
 import AdminGameShuffle from '../components/admin-game-shuffle'
 import AdminRulesets from '../components/admin-rulesets'
 import { useAdminAuth } from '../components/useAdminAuth'
+import { useParams } from 'wouter'
+import { useState } from 'react'
+
+const AVAILABLE_TABS: { [key: string]: string } = {
+  ['sign-in']: 'sign-in-tab',
+  ['game-shuffle']: 'game-shuffle-tab',
+  ['player-profile']: 'player-profile-tab',
+  ['rulesets']: 'rulesets-tab'
+}
 
 const Admin = () => {
-  const [selectedTab, setSelectedTab] = useLocalStorage<string>('admin-selected-tab', 'sign-in-tab')
+  const params = useParams()
+  const [selectedTab, setSelectedTab] = useState<string>(
+    params.tab && AVAILABLE_TABS[params.tab]
+      ? AVAILABLE_TABS[params.tab]
+      : AVAILABLE_TABS['sign-in']
+  )
   const { isAdmin } = useAdminAuth()
 
   return (
