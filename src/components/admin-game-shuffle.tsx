@@ -1,8 +1,6 @@
 import QueueManager from './queue-manager'
 
-type AdminGameShuffleProps = {}
-
-const AdminGameShuffle = (props: AdminGameShuffleProps) => {
+const AdminGameShuffle = () => {
   return (
     <div className="w-full">
       <QueueManager
@@ -10,6 +8,7 @@ const AdminGameShuffle = (props: AdminGameShuffleProps) => {
         pollIntervalMs={3000}
         isAdmin={true}
         signedInOnly={false}
+        showRulesetSelect
       />
     </div>
   )

@@ -10,6 +10,7 @@ import {
   type PlayerObject,
   QueueType,
   resolveQueueLabels,
+  type RulesetObject,
   usePlayers,
   useQueuedPlayers
 } from './backend-manager'
@@ -17,6 +18,7 @@ import { useEffect, useState } from 'react'
 import PlayerSelect from './player-select'
 import QueueButtonGroup from './queue-button-group'
 import { Icon } from '@iconify/react'
+import RulesetSelect from './ruleset-select'
 
 const COLORS = {
   [QueueType.LEAGUE]: '#eb984e',
@@ -65,6 +67,7 @@ type QueueManagerProps = {
   backgroundPollIntervalMs?: number
   signedInOnly?: boolean
   isAdmin?: boolean
+  showRulesetSelect?: boolean
 }
 
 export default function QueueManager(props: QueueManagerProps) {
@@ -187,6 +190,7 @@ export default function QueueManager(props: QueueManagerProps) {
     }
   }
 
+  const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
   const [player, setPlayer] = useState<PlayerObject | null>(null)
   const [queue, setQueue] = useState<QueueType | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -226,12 +230,19 @@ export default function QueueManager(props: QueueManagerProps) {
           setIsSubmitting(false)
         }}
       >
-        <div className="flex gap-1 max-w-[50%]">
-          <PlayerSelect
-            selectedPlayer={player}
-            onSelectionChange={setPlayer}
-            signedinOnly={props.signedInOnly}
-          />
+        <div className="w-full flex gap-2">
+          <div className="flex-1 max-w-[50%]">
+            <PlayerSelect
+              selectedPlayer={player}
+              onSelectionChange={setPlayer}
+              signedinOnly={props.signedInOnly}
+            />
+          </div>
+          {props.showRulesetSelect && (
+            <div className="flex-1 max-w-[50%]">
+              <RulesetSelect selectedRuleset={ruleset} onSelectionChange={setRuleset} />
+            </div>
+          )}
         </div>
         <div className="flex flex-row items-end gap-2">
           <div className="flex-shrink-0">
@@ -263,51 +274,55 @@ export default function QueueManager(props: QueueManagerProps) {
       </Form>
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        {Object.values(QUEUES)
-          .filter((q) => !q.adminOnly)
-          .map((queue) => {
-            const containerId = `${queue.id}`
-            return (
-              <Droppable key={containerId} id={containerId}>
-                <div className="w-full min-h-[120px] px-3 py-2 bg-content1 shadow-medium rounded-2xl border border-white/20 mt-3 transition-all">
-                  <h3 className="text-lg font-bold" style={{ color: queue.color }}>
-                    {queue.title}({items[containerId].length})
-                  </h3>
+        <div className="grid grid-cols-2 gap-2">
+          {Object.values(QUEUES)
+            .filter((q) => !q.adminOnly)
+            .map((queue) => {
+              const containerId = `${queue.id}`
+              return (
+                <div className={queue.id == QueueType.LEAGUE ? 'col-span-2' : 'col-span-1'}>
+                  <Droppable key={containerId} id={containerId}>
+                    <div className="w-full min-h-[120px] px-3 py-2 bg-content1 shadow-medium rounded-2xl border border-white/20 mt-2 transition-all">
+                      <h3 className="text-lg font-bold" style={{ color: queue.color }}>
+                        {queue.title}({items[containerId].length})
+                      </h3>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {items[containerId].map((p) => (
-                      <Draggable key={p.id} id={String(p.id)}>
-                        <Chip
-                          className="min-w-[50px] touch-none text-sm"
-                          style={{ backgroundColor: `${queue.color}20`, color: queue.color }}
-                          endContent={
-                            props.isAdmin && (
-                              <Chip
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => {
-                                  if (prioritized.includes(p.id)) {
-                                    setPrioritized((prev) => prev.filter((x) => x != p.id))
-                                  } else {
-                                    setPrioritized((prev) => [...prev, p.id])
-                                  }
-                                }}
-                                color={prioritized.includes(p.id) ? 'danger' : 'default'}
-                              >
-                                Pri
-                              </Chip>
-                            )
-                          }
-                        >
-                          {p.name}
-                        </Chip>
-                      </Draggable>
-                    ))}
-                  </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {items[containerId].map((p) => (
+                          <Draggable key={p.id} id={String(p.id)}>
+                            <Chip
+                              className="min-w-[50px] touch-none text-sm"
+                              style={{ backgroundColor: `${queue.color}20`, color: queue.color }}
+                              endContent={
+                                props.isAdmin && (
+                                  <Chip
+                                    size="sm"
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                      if (prioritized.includes(p.id)) {
+                                        setPrioritized((prev) => prev.filter((x) => x != p.id))
+                                      } else {
+                                        setPrioritized((prev) => [...prev, p.id])
+                                      }
+                                    }}
+                                    color={prioritized.includes(p.id) ? 'danger' : 'default'}
+                                  >
+                                    Pri
+                                  </Chip>
+                                )
+                              }
+                            >
+                              {p.name}
+                            </Chip>
+                          </Draggable>
+                        ))}
+                      </div>
+                    </div>
+                  </Droppable>
                 </div>
-              </Droppable>
-            )
-          })}
+              )
+            })}
+        </div>
         <div className="grid grid-cols-2 gap-2 w-full">
           {props.isAdmin &&
             Object.values(QUEUES)
@@ -316,12 +331,12 @@ export default function QueueManager(props: QueueManagerProps) {
                 const containerId = `${queue.id}`
                 return (
                   <Droppable key={containerId} id={containerId}>
-                    <div className="min-h-[120px] px-3 py-2 bg-content1 shadow-medium rounded-2xl border border-white/20 mt-3 transition-all">
+                    <div className="min-h-[120px] px-3 py-2 bg-content1 shadow-medium rounded-2xl border border-white/20 mt-2 transition-all">
                       <h3 className="text-lg font-bold" style={{ color: queue.color }}>
                         {queue.title}({items[containerId].length})
                       </h3>
 
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="mt-2 flex flex-wrap gap-2">
                         {items[containerId].map((p) => (
                           <Draggable key={p.id} id={String(p.id)}>
                             <Chip
@@ -358,13 +373,13 @@ export default function QueueManager(props: QueueManagerProps) {
         </div>
         {props.isAdmin && (
           <div className="grid grid-cols-1 w-full">
-            <Droppable key='Trash' id='Trash'>
+            <Droppable key="Trash" id="Trash">
               <div className="w-full min-h-[80px] px-3 py-4 bg-danger-50 dark:bg-danger-50/10 shadow-medium rounded-2xl border border-danger/30 mt-3 transition-all flex items-center justify-center gap-2">
-                <Icon 
-                  icon="material-symbols:delete" 
-                  height={24} 
-                  width={24} 
-                  className="text-danger" 
+                <Icon
+                  icon="material-symbols:delete"
+                  height={24}
+                  width={24}
+                  className="text-danger"
                 />
                 <span className="font-bold text-danger">Drop here to dequeue</span>
               </div>

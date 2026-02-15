@@ -173,7 +173,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
         <TableBody items={filteredActiveityLogs}>
           {(log) => (
             <TableRow key={`activity-log-${log.id}`}>
-              <TableCell className="whitespace-nowrap text-tiny">
+              <TableCell className="whitespace-nowrap">
                 <div className="flex flex-col leading-tight">
                   <span className="text-[11px] text-default-700">{formatDate(log.timestamp)}</span>
                   <span className="text-[10px] font-medium text-default-400">

@@ -204,7 +204,7 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
   }
 
   return (
-    <div className="w-full mt-3">
+    <div className="w-full mt-3 min-h-[200px]">
       <Table
         aria-label="admin-player-profile-table"
         layout="auto"

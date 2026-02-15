@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import {
   DEFAULT_SCORE_DATA,
   submitGameResults,
+  usePlayers,
   type PlayerScoreRecord,
   type RulesetObject
 } from './backend-manager'
@@ -9,6 +10,7 @@ import { addToast } from '@heroui/toast'
 import { hasDuplication } from './utilities'
 import useConfirm from './confirm-modal'
 import ScoreInputForm from './score-input-form'
+import { useSearchParams } from 'wouter'
 
 function validateRecords(ruleset: RulesetObject | null | undefined, records: PlayerScoreRecord[]) {
   if (!ruleset) {
@@ -54,7 +56,9 @@ type LeagueScoreEntryProps = {
 }
 
 const LeagueScoreEntry = (props: LeagueScoreEntryProps) => {
+  const [searchParams] = useSearchParams()
   const [records, setRecords] = useState<PlayerScoreRecord[]>([])
+  const { data: availablePlayers } = usePlayers()
   const { ask } = useConfirm()
 
   // Fill/Remove related score records when ruleset is updated.
@@ -78,6 +82,20 @@ const LeagueScoreEntry = (props: LeagueScoreEntryProps) => {
       return [...prev, ...newRecords]
     })
   }, [props.ruleset])
+
+  // Fill player names based on url params
+  useEffect(() => {
+    if (!!availablePlayers) {
+      setRecords((prev) => {
+        const urlPlayerIds = searchParams.getAll('players')
+        const newRecords = [...prev]
+        for (let i = 0; i < Math.min(newRecords.length, urlPlayerIds.length); ++i) {
+          newRecords[i].player = availablePlayers[Number(urlPlayerIds[i])]
+        }
+        return newRecords
+      })
+    }
+  }, [availablePlayers])
 
   const onSubmitScores = async () => {
     // Exclude scenarios

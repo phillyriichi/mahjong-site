@@ -8,18 +8,28 @@ type RulesetSelectProps = {
   onSelectionChange: (value: RulesetObject | null) => void
   defaultRulesetId?: Key | null | undefined
   className?: string
+  showAdmin?: boolean
 }
 
 const RulesetSelect = (props: RulesetSelectProps) => {
   const { data: availableRulesets, isPending } = useRulesets()
   const items = useMemo(() => {
-    return availableRulesets?.map((item) => ({ ...item, selectText: item.name })) ?? []
-  }, [availableRulesets])
+    return (
+      availableRulesets
+        ?.filter((item) => {
+          if (!props.showAdmin) {
+            return !item.adminOnly
+          }
+          return true
+        })
+        ?.map((item) => ({ ...item, selectText: item.name })) ?? []
+    )
+  }, [availableRulesets, props])
 
   // Initialize ruleset when loading the page.
   useEffect(() => {
     if (!props.selectedRuleset && items && items.length > 0) {
-      const found = props.defaultRulesetId
+      const found = !!props.defaultRulesetId
         ? items.find((item) => item.id === props.defaultRulesetId)
         : null
       const defaultItem = found ?? items[0]

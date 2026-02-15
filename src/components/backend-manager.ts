@@ -100,6 +100,7 @@ export interface RulesetObject {
   startingPoints: number
   seasons?: { [key: string]: SeasonObject }
   selectText?: string | null
+  adminOnly?: boolean
   [propName: string]: unknown
 }
 

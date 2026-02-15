@@ -8,20 +8,17 @@ import { Tabs, Tab, Divider } from '@heroui/react'
 import LeagueScoreEntry from '../components/league-score-entry'
 import LeagueRankings from '../components/league-rankings'
 import LeagueGameLogs from '../components/league-game-logs'
-import {
-  DEFAULT_RULESET_ID,
-  type RulesetObject,
-  type SeasonObject
-} from '../components/backend-manager'
+import { type RulesetObject, type SeasonObject } from '../components/backend-manager'
 import RulesetSelect from '../components/ruleset-select'
 import SeasonSelect from '../components/season-select'
 import LegaueSelfQueue from '../components/league-self-queue'
 import { useState } from 'react'
+import { useSearchParams } from 'wouter'
 
 const League = () => {
-  const [selectedTab, setSelectedTab] = useLocalStorage<string>(
-    'league-selected-tab',
-    'league-ranking-tab'
+  const [searchParams] = useSearchParams()
+  const [selectedTab, setSelectedTab] = useState<string>(
+    `league-${searchParams.get('tab') ?? 'ranking'}-tab`
   )
   const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
   const [season, setSeason] = useState<SeasonObject | null>(null)
@@ -34,7 +31,7 @@ const League = () => {
             <RulesetSelect
               selectedRuleset={ruleset}
               onSelectionChange={setRuleset}
-              defaultRulesetId={DEFAULT_RULESET_ID}
+              defaultRulesetId={searchParams.get('ruleset')}
             />
           </div>
           {hasSeason ? (
@@ -67,8 +64,8 @@ const League = () => {
                 variant="light"
                 classNames={{
                   base: 'w-full',
-                  tabList: 'w-full justify-around', // 让 Tab 标签本身均匀分布
-                  panel: 'w-full pt-10 px-0' // 移除 justify-center，确保 panel 撑满
+                  tabList: 'w-full justify-around',
+                  panel: 'w-full pt-10 px-0'
                 }}
                 selectedKey={selectedTab}
                 onSelectionChange={(key) => setSelectedTab(key as string)}
