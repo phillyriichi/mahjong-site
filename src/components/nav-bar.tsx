@@ -3,8 +3,10 @@ import { Dialog, DialogPanel, PopoverGroup } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Link } from 'wouter'
 import { SPA_ROUTES } from '../route-paths'
-import { Avatar, Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
+import { Avatar, Button, Popover, PopoverContent, PopoverTrigger } from '@heroui/react'
 import { useAdminAuth } from './useAdminAuth'
+import { signOut } from 'firebase/auth'
+import { auth } from './firebase'
 
 const NavBar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -20,6 +22,16 @@ const NavBar = () => {
           <div className="px-1 py-2">
             <div className="text-small font-bold">{user.displayName}</div>
             {isAdmin ? <div className="text-tiny text-default-500">Admin</div> : <></>}
+            <Button
+              className="mt-3"
+              color="danger"
+              size="sm"
+              onPress={() => {
+                signOut(auth)
+              }}
+            >
+              Sign out
+            </Button>
           </div>
         </PopoverContent>
       </Popover>

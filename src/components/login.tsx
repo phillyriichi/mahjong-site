@@ -1,5 +1,5 @@
 import { auth, googleProvider } from './firebase'
-import { signInWithPopup, signOut } from 'firebase/auth'
+import { signInWithPopup } from 'firebase/auth'
 import { Button } from '@heroui/button'
 import { useAdminAuth } from './useAdminAuth'
 
@@ -18,19 +18,7 @@ function LoginForm() {
       </Button>
     )
   }
-
-  return (
-    <div className="flex">
-      <Button
-        color="danger"
-        onPress={() => {
-          signOut(auth)
-        }}
-      >
-        Sign out
-      </Button>
-    </div>
-  )
+  return <></>
 }
 
 export default LoginForm

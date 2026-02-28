@@ -8,6 +8,7 @@ import {
   dequeuePlayer,
   enqueuePlayer,
   type PlayerObject,
+  QUEUE_COLORS,
   QueueType,
   resolveQueueLabels,
   type RulesetObject,
@@ -20,44 +21,36 @@ import QueueButtonGroup from './queue-button-group'
 import { Icon } from '@iconify/react'
 import RulesetSelect from './ruleset-select'
 
-const COLORS = {
-  [QueueType.LEAGUE]: '#eb984e',
-  [QueueType.FLEXIBLE]: '#5dade2',
-  [QueueType.CASUAL]: '#16a085',
-  [QueueType.STAFF]: '#566573',
-  [QueueType.BREAK]: '#c90076'
-}
-
 const QUEUES = {
   [QueueType.LEAGUE]: {
     id: QueueType.LEAGUE,
     title: QueueType.LEAGUE,
     adminOnly: false,
-    color: COLORS[QueueType.LEAGUE]
+    color: QUEUE_COLORS[QueueType.LEAGUE]
   },
   [QueueType.FLEXIBLE]: {
     id: QueueType.FLEXIBLE,
     title: QueueType.FLEXIBLE,
     adminOnly: false,
-    color: COLORS[QueueType.FLEXIBLE]
+    color: QUEUE_COLORS[QueueType.FLEXIBLE]
   },
   [QueueType.CASUAL]: {
     id: QueueType.CASUAL,
     title: QueueType.CASUAL,
     adminOnly: false,
-    color: COLORS[QueueType.CASUAL]
+    color: QUEUE_COLORS[QueueType.CASUAL]
   },
   [QueueType.STAFF]: {
     id: QueueType.STAFF,
     title: QueueType.STAFF,
     adminOnly: true,
-    color: COLORS[QueueType.STAFF]
+    color: QUEUE_COLORS[QueueType.STAFF]
   },
   [QueueType.BREAK]: {
     id: QueueType.BREAK,
     title: QueueType.BREAK,
     adminOnly: true,
-    color: COLORS[QueueType.BREAK]
+    color: QUEUE_COLORS[QueueType.BREAK]
   }
 }
 
@@ -387,6 +380,18 @@ export default function QueueManager(props: QueueManagerProps) {
           </div>
         )}
       </DndContext>
+      {props.isAdmin && (
+        <div className="flex flex-row items-end gap-2 mt-3">
+          <Button color="primary" className="px-3 font-bold ml-1">
+            {' '}
+            Start New Shuffle{' '}
+          </Button>
+          <Button color="danger" className="px-3 font-bold ml-1">
+            {' '}
+            Reset Queue{' '}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

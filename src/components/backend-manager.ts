@@ -60,10 +60,20 @@ export const QueueType = {
   FLEXIBLE: 'Flexible',
   CASUAL: 'Casual',
   STAFF: 'Staff',
-  BREAK: 'Break'
+  BREAK: 'Break',
+  OBSERVER: 'Observer'
 } as const
 
 export type QueueType = (typeof QueueType)[keyof typeof QueueType]
+
+export const QUEUE_COLORS = {
+  [QueueType.LEAGUE]: '#eb984e',
+  [QueueType.FLEXIBLE]: '#5dade2',
+  [QueueType.CASUAL]: '#16a085',
+  [QueueType.STAFF]: '#566573',
+  [QueueType.BREAK]: '#c90076',
+  [QueueType.OBSERVER]: '#d30000'
+}
 
 export const ActivityType = {
   SIGN_IN: 'SIGN_IN',
@@ -429,6 +439,39 @@ export async function dequeuePlayer(playerId: number, rulesetId: string) {
     player: String(playerId)
   }
   return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+/**
+ * Fetches scheduled games specified ruleset.
+ *
+ * @param rulesetId The ruleset ID.
+ * @returns fecthed scheduled games.
+ */
+export async function fetchScheduledGames(rulesetId: string): Promise<any> {
+  const dataToPost = {
+    action: 'load_scheduled_games',
+    ruleset: rulesetId
+  }
+  console.log('>>> posting ', dataToPost)
+  const response = await axios.post(BACKEND_URL, dataToPost)
+  console.log('>>> got ', response.data)
+  return response.data
+}
+
+export const useScheduledGames = (
+  rulesetId: string | null | undefined,
+  options: { [key: string]: any } = {}
+) => {
+  return useQuery({
+    queryKey: ['scheduledGames', rulesetId],
+    queryFn: async () => {
+      return fetchScheduledGames(rulesetId!)
+    },
+    enabled: !!rulesetId,
+    staleTime: 1000 * 60 * 5, // 5min
+    placeholderData: (previousData) => previousData,
+    ...options
+  })
 }
 
 /**
