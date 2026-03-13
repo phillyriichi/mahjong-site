@@ -60,19 +60,18 @@ export const QueueType = {
   FLEXIBLE: 'Flexible',
   CASUAL: 'Casual',
   STAFF: 'Staff',
-  BREAK: 'Break',
-  OBSERVER: 'Observer'
+  BREAK: 'Break'
 } as const
 
 export type QueueType = (typeof QueueType)[keyof typeof QueueType]
 
-export const QUEUE_COLORS = {
-  [QueueType.LEAGUE]: '#eb984e',
-  [QueueType.FLEXIBLE]: '#5dade2',
-  [QueueType.CASUAL]: '#16a085',
-  [QueueType.STAFF]: '#566573',
-  [QueueType.BREAK]: '#c90076',
-  [QueueType.OBSERVER]: '#d30000'
+export const COLORS: { [key: string]: string } = {
+  [QueueType.LEAGUE as string]: '#eb984e',
+  [QueueType.FLEXIBLE as string]: '#5dade2',
+  [QueueType.CASUAL as string]: '#16a085',
+  [QueueType.STAFF as string]: '#566573',
+  [QueueType.BREAK as string]: '#c90076',
+  ['Observer']: '#d30000'
 }
 
 export const ActivityType = {
@@ -98,6 +97,7 @@ export interface PlayerObject {
   signedIn?: boolean
   membership?: MembershipStatus[]
   email?: string
+  discordHandle?: string
   [propName: string]: unknown
 }
 
@@ -337,12 +337,13 @@ export const usePlayers = () => {
   })
 }
 
-export async function updatePlayer(id: number, name: string, email: string) {
+export async function updatePlayer(id: number, name: string, email: string, discordHandle: string) {
   const dataToPost: { [key: string]: any } = {
     action: 'update_player',
     player_id: id,
     player_name: name,
-    player_email: email
+    player_email: email,
+    player_discord_handle: discordHandle
   }
   const response = await axios.post(BACKEND_URL, dataToPost)
   return response.data
@@ -405,7 +406,7 @@ export const useQueuedPlayers = (
   refetchInterval: number | null = null
 ) => {
   const opts: any = {
-    queryKey: ['queuedPlayers'],
+    queryKey: ['queuedPlayers', rulesetId],
     queryFn: async () => {
       return fetchQueuedPlayers(rulesetId!)
     },
@@ -441,6 +442,47 @@ export async function dequeuePlayer(playerId: number, rulesetId: string) {
   return (await axios.post(BACKEND_URL, dataToPost)).data
 }
 
+export async function startNewShuffle(
+  rulesetId: string,
+  queue: { [key: string]: any },
+  prioritizedPlayers: number[],
+  algorithm: string
+) {
+  const dataToPost = {
+    action: 'schedule_games',
+    ruleset: rulesetId,
+    queue: queue,
+    prioritized_players: prioritizedPlayers,
+    algorithm: algorithm,
+    update_queue: true // this is always true now.
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function postSchedudledGamesToDiscord(rulesetId: string) {
+  const dataToPost = {
+    action: 'post_scheduled_games_to_discord',
+    ruleset: rulesetId
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function resetQueue(rulesetId: string) {
+  const dataToPost = {
+    action: 'reset_queue',
+    ruleset: rulesetId
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
+export async function resetScheudledGames(rulesetId: string) {
+  const dataToPost = {
+    action: 'reset_scheduled_games',
+    ruleset: rulesetId
+  }
+  return (await axios.post(BACKEND_URL, dataToPost)).data
+}
+
 /**
  * Fetches scheduled games specified ruleset.
  *
@@ -452,9 +494,7 @@ export async function fetchScheduledGames(rulesetId: string): Promise<any> {
     action: 'load_scheduled_games',
     ruleset: rulesetId
   }
-  console.log('>>> posting ', dataToPost)
   const response = await axios.post(BACKEND_URL, dataToPost)
-  console.log('>>> got ', response.data)
   return response.data
 }
 
@@ -849,6 +889,7 @@ export async function updatePlayerMembership(
 export async function addNewPlayer(
   newPlayerName: string,
   newPlayerEmail: string,
+  newPlayerDiscordHandle: string,
   membershipTier: string,
   paymentType: PaymentType,
   price: number,
@@ -858,6 +899,7 @@ export async function addNewPlayer(
     action: 'add_new_player',
     player_name: newPlayerName,
     player_email: newPlayerEmail,
+    player_discord_handle: newPlayerDiscordHandle,
     membership_tier: membershipTier,
     payment_type: paymentType,
     price: price,

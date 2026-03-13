@@ -6,7 +6,7 @@ type ConstrainedDivProps = {
 }
 
 const ConstrainedDiv = ({ children, className }: ConstrainedDivProps) => (
-  <div className={twMerge('max-w-7xl mx-auto', className)}>{children}</div>
+  <div className={twMerge('max-w-[96%] mx-auto', className)}>{children}</div>
 )
 
 export default ConstrainedDiv

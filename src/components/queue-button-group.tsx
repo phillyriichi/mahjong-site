@@ -19,9 +19,6 @@ const QueueButtonGroup = (props: QueueButtonGroupProps) => {
       if (!props.showStaff && item == QueueType.BREAK) {
         return false
       }
-      if (item == QueueType.OBSERVER) {
-        return false
-      }
       return true
     })
     .map((item) => {

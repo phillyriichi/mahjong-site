@@ -71,7 +71,7 @@ const PlayerSelect = (props: PlayerSelectProps) => {
         const found = filteredPlayers.find((p) => p.id.toString() === key?.toString())
         props.onSelectionChange(found ?? null)
       }}
-      endContent={
+      startContent={
         <>
           {props.showActiveMembership && props.selectedPlayer && (
             <Chip

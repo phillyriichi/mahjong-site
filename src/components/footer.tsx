@@ -1,7 +1,18 @@
-const socialSvgClassName = 'w-12 h-12 fill-copy-brand-secondary'
+import { twMerge } from 'tailwind-merge'
 
-const Footer = () => (
-  <footer className="w-full bg-background-brand-secondary py-4 flex justify-center items-center gap-4">
+const socialSvgClassName = 'w-12 h-12 fill-copy-brand-primary'
+
+type FooterProps = {
+  className?: string
+}
+
+const Footer = ({ className }: FooterProps) => (
+  <footer
+    className={twMerge(
+      'w-full bg-background-brand-secondary py-4 flex justify-center items-center gap-4',
+      className ?? ''
+    )}
+  >
     {/* <!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--> */}
     <a href="https://www.facebook.com/PhillyMahjawn" target="_blank">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" className={socialSvgClassName}>

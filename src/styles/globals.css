@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /* https://colorkit.co/color/e63030/ */
+/*
 @theme {
   --color-background-primary: #ffedea;
   --color-background-secondary: #ffc8c1;
@@ -17,6 +18,28 @@
   --color-background-brand-secondary: #bb2727;
 
   --color-copy-brand-primary: #ffdad5;
+  --color-copy-brand-secondary: #ffb6ad;
+
+  --color-header-primary: #3079e6;
+  --color-header-secondary: #343a48;
+
+  --color-border-primary: #bb2727;
+}
+*/
+
+@theme {
+  --color-background-primary: #fbe4e6;
+  --color-background-secondary: #faf4e7;
+
+  --color-copy-primary: #2a2727;
+  --color-copy-secondary: #2a2120;
+
+  --color-link-secondary: #5f7c80;
+
+  --color-background-brand-primary: #ffedea;
+  --color-background-brand-secondary: #ffedea;
+
+  --color-copy-brand-primary: #e63030;
   --color-copy-brand-secondary: #ffb6ad;
 
   --color-header-primary: #3079e6;

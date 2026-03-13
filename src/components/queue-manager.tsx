@@ -8,63 +8,72 @@ import {
   dequeuePlayer,
   enqueuePlayer,
   type PlayerObject,
-  QUEUE_COLORS,
+  COLORS,
   QueueType,
   resolveQueueLabels,
   type RulesetObject,
   usePlayers,
-  useQueuedPlayers
+  useQueuedPlayers,
+  resetQueue,
+  startNewShuffle
 } from './backend-manager'
 import { useEffect, useState } from 'react'
 import PlayerSelect from './player-select'
 import QueueButtonGroup from './queue-button-group'
 import { Icon } from '@iconify/react'
 import RulesetSelect from './ruleset-select'
+import useConfirm from './confirm-modal'
+import { useQueryClient } from '@tanstack/react-query'
 
 const QUEUES = {
   [QueueType.LEAGUE]: {
     id: QueueType.LEAGUE,
     title: QueueType.LEAGUE,
     adminOnly: false,
-    color: QUEUE_COLORS[QueueType.LEAGUE]
+    color: COLORS[QueueType.LEAGUE]
   },
   [QueueType.FLEXIBLE]: {
     id: QueueType.FLEXIBLE,
     title: QueueType.FLEXIBLE,
     adminOnly: false,
-    color: QUEUE_COLORS[QueueType.FLEXIBLE]
+    color: COLORS[QueueType.FLEXIBLE]
   },
   [QueueType.CASUAL]: {
     id: QueueType.CASUAL,
     title: QueueType.CASUAL,
     adminOnly: false,
-    color: QUEUE_COLORS[QueueType.CASUAL]
+    color: COLORS[QueueType.CASUAL]
   },
   [QueueType.STAFF]: {
     id: QueueType.STAFF,
     title: QueueType.STAFF,
     adminOnly: true,
-    color: QUEUE_COLORS[QueueType.STAFF]
+    color: COLORS[QueueType.STAFF]
   },
   [QueueType.BREAK]: {
     id: QueueType.BREAK,
     title: QueueType.BREAK,
     adminOnly: true,
-    color: QUEUE_COLORS[QueueType.BREAK]
+    color: COLORS[QueueType.BREAK]
   }
 }
 
 type QueueManagerProps = {
-  rulesetId: string
   pollIntervalMs: number
   backgroundPollIntervalMs?: number
   signedInOnly?: boolean
   isAdmin?: boolean
   showRulesetSelect?: boolean
+  onRulesetChange?: (value: RulesetObject | null) => void
 }
 
 export default function QueueManager(props: QueueManagerProps) {
-  const { data: queuedPlayers } = useQueuedPlayers(props.rulesetId, props.pollIntervalMs)
+  const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
+  const [player, setPlayer] = useState<PlayerObject | null>(null)
+  const [queue, setQueue] = useState<QueueType | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const { data: queuedPlayers } = useQueuedPlayers(ruleset?.id, props.pollIntervalMs)
   const { data: players } = usePlayers()
   const [items, setItems] = useState<{ [key: string]: PlayerObject[] }>({
     League: [],
@@ -74,6 +83,43 @@ export default function QueueManager(props: QueueManagerProps) {
     Break: []
   })
   const [prioritized, setPrioritized] = useState<number[]>([])
+
+  const { ask, ConfirmModal } = useConfirm()
+  const queryClient = useQueryClient()
+
+  const generateQueueFromItems = (items: { [key: string]: PlayerObject[] }) => {
+    const generatedQueue: { [key: string]: any } = {}
+    let nonBreakPlayers: number = 0
+    Object.entries(items).forEach(([queue, players]) => {
+      players.forEach((p) => {
+        generatedQueue[p.id] = {
+          playerId: p.id,
+          playerName: p.name,
+          labels: { League: false, Casual: false, Staff: false, Break: false }
+        }
+        if (queue == 'League') {
+          generatedQueue[p.id].labels.League = true
+          nonBreakPlayers += 1
+        } else if (queue == 'Flexible') {
+          generatedQueue[p.id].labels.League = true
+          generatedQueue[p.id].labels.Casual = true
+          nonBreakPlayers += 1
+        } else if (queue == 'Casual') {
+          generatedQueue[p.id].labels.Casual = true
+          nonBreakPlayers += 1
+        } else if (queue == 'Staff') {
+          generatedQueue[p.id].labels.Staff = true
+          nonBreakPlayers += 1
+        } else if (queue == 'Break') {
+          generatedQueue[p.id].labels.Break = true
+        }
+      })
+    })
+    return {
+      generatedQueue: generatedQueue,
+      nonBreakPlayers: nonBreakPlayers
+    }
+  }
 
   useEffect(() => {
     if (!players || !queuedPlayers) {
@@ -124,12 +170,12 @@ export default function QueueManager(props: QueueManagerProps) {
     to: string | null
   ) => {
     // No-op
-    if (from == to) {
+    if (!ruleset || from == to) {
       return
     }
     // Dequeue a player
     if (to == null && from != null) {
-      dequeuePlayer(player.id, props.rulesetId)
+      dequeuePlayer(player.id, ruleset.id)
       setItems((prev) => ({
         ...prev,
         [from]: prev[from].filter((p: PlayerObject) => p.id !== player.id)
@@ -138,7 +184,7 @@ export default function QueueManager(props: QueueManagerProps) {
     }
     // Add a new player
     if (from == null && to != null) {
-      enqueuePlayer(player.id, props.rulesetId, resolveQueueLabels(to as QueueType))
+      enqueuePlayer(player.id, ruleset.id, resolveQueueLabels(to as QueueType))
       setItems((prev) => ({
         ...prev,
         [to]: [...prev[to], player].toSorted(playerSorterFn)
@@ -147,7 +193,7 @@ export default function QueueManager(props: QueueManagerProps) {
     }
     // Change queue for a player
     if (from != null && to != null) {
-      enqueuePlayer(player.id, props.rulesetId, resolveQueueLabels(to as QueueType))
+      enqueuePlayer(player.id, ruleset.id, resolveQueueLabels(to as QueueType))
       setItems((prev) => ({
         ...prev,
         [from]: prev[from].filter((p: PlayerObject) => p.id !== player.id),
@@ -182,11 +228,6 @@ export default function QueueManager(props: QueueManagerProps) {
       handleQueueChange(foundPlayer, from, to)
     }
   }
-
-  const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
-  const [player, setPlayer] = useState<PlayerObject | null>(null)
-  const [queue, setQueue] = useState<QueueType | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (action: string) => {
     if (!player) {
@@ -233,7 +274,16 @@ export default function QueueManager(props: QueueManagerProps) {
           </div>
           {props.showRulesetSelect && (
             <div className="flex-1 max-w-[50%]">
-              <RulesetSelect selectedRuleset={ruleset} onSelectionChange={setRuleset} />
+              <RulesetSelect
+                selectedRuleset={ruleset}
+                onSelectionChange={(ruleset) => {
+                  setRuleset(ruleset)
+                  if (props.onRulesetChange) {
+                    props.onRulesetChange(ruleset)
+                  }
+                }}
+                showAdmin
+              />
             </div>
           )}
         </div>
@@ -382,14 +432,52 @@ export default function QueueManager(props: QueueManagerProps) {
       </DndContext>
       {props.isAdmin && (
         <div className="flex flex-row items-end gap-2 mt-3">
-          <Button color="primary" className="px-3 font-bold ml-1">
-            {' '}
-            Start New Shuffle{' '}
+          <Button
+            color="primary"
+            className="px-3 font-bold ml-1"
+            onPress={async () => {
+              if (!ruleset || !players) {
+                return
+              }
+              const { generatedQueue, nonBreakPlayers } = generateQueueFromItems(items)
+              if (nonBreakPlayers < ruleset.numPlayers) {
+                alertWithToast(
+                  'warning',
+                  `Needs at least ${ruleset.numPlayers} non-break players`,
+                  `Insufficient players`
+                )
+                return
+              }
+              await startNewShuffle(ruleset.id, generatedQueue, prioritized, 'FULLY_RANDOM')
+              queryClient.invalidateQueries({ queryKey: ['scheduledGames', ruleset.id] })
+              alertWithToast('success', ``, `Games scheduled.`)
+            }}
+          >
+            Start New Shuffle
           </Button>
-          <Button color="danger" className="px-3 font-bold ml-1">
-            {' '}
-            Reset Queue{' '}
+          <Button
+            color="danger"
+            className="px-3 font-bold ml-1"
+            onPress={async () => {
+              if (
+                await ask({
+                  title: `Sure to reset [${ruleset?.name}] queue?`,
+                  messages: [],
+                  confirmText: 'Reset',
+                  type: 'danger'
+                })
+              ) {
+                if (!ruleset) {
+                  return
+                }
+                await resetQueue(ruleset.id)
+                queryClient.invalidateQueries({ queryKey: ['queuedPlayers', ruleset.id] })
+              }
+            }}
+          >
+            Reset Queue
           </Button>
+          <ConfirmModal />
         </div>
       )}
     </div>

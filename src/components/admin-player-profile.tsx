@@ -7,6 +7,7 @@ import {
   usePlayers,
   type PlayerObject
 } from './backend-manager'
+import type { SortDescriptor } from '@heroui/react'
 import BaseSingleSelect from './base-single-select'
 import { useMemo, useState } from 'react'
 import type { Key } from '@react-types/shared'
@@ -35,12 +36,41 @@ const AdminPlayerProfile = () => {
   const { data: players, isLoading } = usePlayers()
   const [membershipFilter, setMembershipFilter] = useState(avialbleFilters[0])
   const [searchFilter, setSearchFilter] = useState('')
-  const filteredPlayers = useMemo(() => {
-    if (!players || !membershipFilter) {
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: 'id',
+    direction: 'ascending'
+  })
+
+  const sortedPlayers = useMemo(() => {
+    if (!players) {
+      return []
+    }
+
+    return Object.values(players).sort((a, b) => {
+      const col = sortDescriptor.column as keyof typeof a
+      if (!col) return 0
+      const first = a[col]
+      const second = b[col]
+      let cmp = 0
+      if (typeof first === 'number' && typeof second === 'number') {
+        // compare number
+        cmp = first < second ? -1 : first > second ? 1 : 0
+      } else {
+        // compare string
+        const aStr = (first?.toString() || '').toLowerCase()
+        const bStr = (second?.toString() || '').toLowerCase()
+        cmp = aStr.localeCompare(bStr)
+      }
+      return sortDescriptor.direction === 'descending' ? -cmp : cmp
+    })
+  }, [sortDescriptor, players])
+
+  const filteredSortedPlayers = useMemo(() => {
+    if (!sortedPlayers || !membershipFilter) {
       return []
     }
     const now = new Date()
-    return Object.values(players)
+    return sortedPlayers
       .filter((p) => {
         if (membershipFilter.id == 'ALL') {
           return true
@@ -50,11 +80,14 @@ const AdminPlayerProfile = () => {
       })
       .filter((p) => {
         if (!!searchFilter) {
-          return p.name.toLowerCase().includes(searchFilter.toLowerCase())
+          return (
+            p.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+            String(p.id).includes(searchFilter.toLocaleLowerCase())
+          )
         }
         return true
       })
-  }, [players, membershipFilter.id, searchFilter])
+  }, [sortedPlayers, membershipFilter.id, searchFilter])
 
   if (isLoading) {
     return (
@@ -83,8 +116,8 @@ const AdminPlayerProfile = () => {
               }
             }}
           />
-          <Chip className="ml-2" color="default">
-            Count: {filteredPlayers.length}
+          <Chip className="ml-2" color="default" size="sm">
+            Count: {filteredSortedPlayers.length}
           </Chip>
         </div>
 
@@ -117,10 +150,8 @@ const AdminPlayerProfile = () => {
       <div className="w-full">
         <Chip color={color} size="sm">
           {MembershipTypeText[resolvedMembership.type]}
+          {resolvedMembership.expire && <span>({formatDate(resolvedMembership.expire)})</span>}
         </Chip>
-        {resolvedMembership.expire && (
-          <span className="ml-2">({formatDate(resolvedMembership.expire)})</span>
-        )}
       </div>
     )
   }
@@ -137,28 +168,48 @@ const AdminPlayerProfile = () => {
       <div className="w-full mt-2 min-h-[400px]">
         <Table
           aria-label="admin-player-profile-table"
+          isVirtualized
           layout="auto"
           isStriped
           topContent={topContent()}
+          sortDescriptor={sortDescriptor}
+          onSortChange={(des) => {
+            console.log('>>> des = ', des)
+            setSortDescriptor(des)
+          }}
           classNames={{
             base: 'max-w-full',
             table: 'min-w-[600px]'
           }}
         >
           <TableHeader>
-            <TableColumn> ID </TableColumn>
-            <TableColumn> Name </TableColumn>
-            <TableColumn> Active Membership </TableColumn>
-            <TableColumn> Email </TableColumn>
+            <TableColumn key="id" allowsSorting>
+              {' '}
+              ID{' '}
+            </TableColumn>
+            <TableColumn key="name" allowsSorting>
+              {' '}
+              Name{' '}
+            </TableColumn>
+            <TableColumn key="membership"> Active Membership </TableColumn>
+            <TableColumn key="email" allowsSorting>
+              {' '}
+              Email{' '}
+            </TableColumn>
+            <TableColumn key="discordHandle" allowsSorting>
+              {' '}
+              Discord Handle
+            </TableColumn>
           </TableHeader>
 
-          <TableBody items={filteredPlayers}>
+          <TableBody items={filteredSortedPlayers}>
             {(p) => (
               <TableRow key={`player-${p.id}`}>
                 <TableCell>{p.id}</TableCell>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{renderActiveMembershipCell(p)}</TableCell>
                 <TableCell>{p.email}</TableCell>
+                <TableCell>{p.discordHandle}</TableCell>
               </TableRow>
             )}
           </TableBody>

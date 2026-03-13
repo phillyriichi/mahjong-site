@@ -16,6 +16,7 @@ const PlayerUpdateInputForm = () => {
   const [player, setPlayer] = useState<PlayerObject | null>(null)
   const [updatedPlayerName, setUpdatedPlayerName] = useState<string>('')
   const [updatedPlayerEmail, setUpdatedPlayerEmail] = useState<string>('')
+  const [updatedPlayerDiscordHandle, setUpdatedPlayerDiscordHandle] = useState<string>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const queryClient = useQueryClient()
 
@@ -28,24 +29,51 @@ const PlayerUpdateInputForm = () => {
     if (player.name != updatedPlayerName) {
       needUpdate = true
     }
-    if (!!player.email && !!updatedPlayerEmail && player.email != updatedPlayerEmail) {
+    if (
+      (!player.email && !!updatedPlayerEmail) ||
+      (!!player.email && !updatedPlayerEmail) ||
+      (!!player.email && !!updatedPlayerEmail && player.email != updatedPlayerEmail)
+    ) {
       needUpdate = true
     }
+    if (
+      (!player.discordHandle && !!updatedPlayerDiscordHandle) ||
+      (!!player.discordHandle && !updatedPlayerDiscordHandle) ||
+      (!!player.discordHandle &&
+        !!updatedPlayerDiscordHandle &&
+        player.discordHandle != updatedPlayerDiscordHandle)
+    ) {
+      needUpdate = true
+    }
+    console.log(
+      '!!!',
+      needUpdate,
+      player,
+      updatedPlayerName,
+      updatedPlayerEmail,
+      updatedPlayerDiscordHandle
+    )
     if (!needUpdate) {
       alertWithToast('danger', 'Identical information, no update needed')
       return
     }
-    const result = await updatePlayer(player.id, updatedPlayerName, updatedPlayerEmail)
+    const result = await updatePlayer(
+      player.id,
+      updatedPlayerName,
+      updatedPlayerEmail,
+      updatedPlayerDiscordHandle
+    )
     if (result.success) {
       queryClient.invalidateQueries({ queryKey: ['players'] })
       setPlayer({
         ...player,
         name: updatedPlayerName,
-        email: updatedPlayerEmail
+        email: updatedPlayerEmail,
+        discordHandle: updatedPlayerDiscordHandle
       })
       alertWithToast(
         'success',
-        `Updated player (ID=${player.id}) with ${updatedPlayerName}, ${updatedPlayerEmail}`
+        `Updated player (ID=${player.id}) with name = ${updatedPlayerName}, email = ${updatedPlayerEmail}, discord = ${updatedPlayerDiscordHandle}`
       )
     } else {
       alertWithToast('danger', result.message)
@@ -74,6 +102,7 @@ const PlayerUpdateInputForm = () => {
                 setPlayer(player)
                 setUpdatedPlayerName(player?.name ?? '')
                 setUpdatedPlayerEmail(player?.email ?? '')
+                setUpdatedPlayerDiscordHandle(player?.discordHandle ?? '')
               }}
               label=""
               variant="faded"
@@ -83,27 +112,39 @@ const PlayerUpdateInputForm = () => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
-          <span className="text-sm font-medium md:min-w-[100px]">Player Name</span>
+          <span className="text-sm font-medium md:min-w-[100px]">Name</span>
           <div className="flex-1 max-w-sm">
             <Input
               className="max-w-xs"
               label=""
-              placeholder="Updated Name"
+              placeholder="Name"
               value={updatedPlayerName}
               onValueChange={setUpdatedPlayerName}
             />
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
-          <span className="text-sm font-medium md:min-w-[100px]">Player Email</span>
+          <span className="text-sm font-medium md:min-w-[100px]">Email</span>
           <div className="flex-1 max-w-sm">
             <Input
               className="max-w-xs"
               label=""
-              placeholder="Updated Email"
+              placeholder="Email"
               type="email"
               value={updatedPlayerEmail}
               onValueChange={setUpdatedPlayerEmail}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+          <span className="text-sm font-medium md:min-w-[100px]">Discord Handle</span>
+          <div className="flex-1 max-w-sm">
+            <Input
+              className="max-w-xs"
+              label=""
+              placeholder="Discord Handle"
+              value={updatedPlayerDiscordHandle}
+              onValueChange={setUpdatedPlayerDiscordHandle}
             />
           </div>
         </div>

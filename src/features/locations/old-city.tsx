@@ -1,9 +1,15 @@
+import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@heroui/react'
 import ConstrainedDiv from '../../components/constrained-div'
-import { HeaderThree, PageHeader } from '../../components/header'
+import { HeaderTwo, PageHeader } from '../../components/header'
 import Page from '../../components/page'
 import Section from '../../components/section'
 
 const OldCity = () => {
+  const jawnsouHours = [
+    { day: 'Friday', hours: '7:00 pm - 11:00 pm' },
+    { day: 'Saturday', hours: '12:00 pm - 8:00 pm' },
+    { day: 'Sunday', hours: '2:00 pm - 8:00 pm' }
+  ]
   return (
     <Page title="Philly Mah-Jawn Mahjong Club">
       <Section>
@@ -11,19 +17,19 @@ const OldCity = () => {
       </Section>
       <Section>
         <ConstrainedDiv className="flex flex-col gap-6">
-          <HeaderThree text="Cost" />
-          <p>The venue fee is $10 for the day.</p>
-          <p>
+          <HeaderTwo text="Cost" />
+          <p className="text-copy-secondary text-lg">The venue fee is $10 for the day.</p>
+          <p className="text-copy-secondary text-lg">
             We offer a special introductory period on Saturdays from 12:00 pm - 2:00 pm where you
             can access the venue to try it out, play some Mahjong, and even receive a free lesson
             from our talented staff for no extra cost!
           </p>
-          <p>
+          <p className="text-copy-secondary text-lg">
             We have a membership program which allows members to utilize the space outside the
             introductory period.
           </p>
-          <p>There are 2 tiers of membership available:</p>
-          <ul>
+          <p className="text-copy-secondary text-lg">There are 2 tiers of membership available:</p>
+          <ul className="text-copy-secondary text-lg">
             <li>
               <b>- Tanyao:</b> $20/calendar year. Allows access to the club and table reservations.
             </li>
@@ -32,13 +38,15 @@ const OldCity = () => {
               (every tenth visit is free!), invites to monthly membership, and more!
             </li>
           </ul>
-          <p>Purchasing a new membership will waive the venue fee for that day!</p>
-          <p>
+          <p className="text-copy-secondary text-lg">
+            Purchasing a new membership will waive the venue fee for that day!
+          </p>
+          <p className="text-copy-secondary text-lg">
             If you have a group of 4, feel free to contact us if you are interested in reserving a
             table ahead of time. If coming solo, you can check out our Discord server (link below)
             to confirm with other players ahead of time for games.
           </p>
-          <p>
+          <p className="text-copy-secondary text-lg">
             While we are a Japanese Mahjong club, our clubhouse can support multiple types of
             Mahjong (Chinese, American, etc). If you have a group of 4 and want to have a table
             configured for a specific type of Mahjong, let us know ahead of time and we will be
@@ -48,31 +56,40 @@ const OldCity = () => {
       </Section>
       <Section>
         <ConstrainedDiv>
-          <HeaderThree text="Hours" />
-          <div className="border-t-2 border-b-1 border-border-primary py-2 flex mt-6">
-            <p className="basis-sm">Friday</p>
-            <p>7:00 pm - 11:00 pm</p>
-          </div>
-          <div className="border-t-1 border-b-1 border-border-primary py-2 flex">
-            <p className="basis-sm">Saturday</p>
-            <p>12:00 pm - 8:00 pm</p>
-          </div>
-          <div className="border-t-1 border-b-2 border-border-primary py-2 flex">
-            <p className="basis-sm">Sunday</p>
-            <p>2:00 pm - 8:00 pm</p>
-          </div>
+          <HeaderTwo text="Hours" />
+          <Table
+            hideHeader
+            removeWrapper
+            className="mt-2"
+            classNames={{
+              td: 'border-t-2 border-b-2 border-divider border-red-700'
+            }}
+          >
+            <TableHeader>
+              <TableColumn key="day"> Day </TableColumn>
+              <TableColumn key="hours"> Hours </TableColumn>
+            </TableHeader>
+            <TableBody items={jawnsouHours}>
+              {(item) => (
+                <TableRow key={item.day}>
+                  <TableCell> {item.day} </TableCell>
+                  <TableCell> {item.hours} </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </ConstrainedDiv>
       </Section>
       <Section>
         <ConstrainedDiv>
-          <HeaderThree text="Location and Access" />
+          <HeaderTwo text="Location and Access" />
           <div className="flex flex-col md:flex-row justify-between gap-4 items-center min-h-[450px]">
             <div className="basis-1/3">
-              <p>
+              <p className="text-copy-secondary text-lg">
                 The clubhouse is located at 123 Chestnut St. Philadelphia, PA 19106. The entrance is
                 on 2nd St.
               </p>
-              <p className="mt-4">
+              <p className="text-copy-secondary text-lg mt-4">
                 If the door is locked, you can dial <b>{'#'}122</b> on the callbox to the left of
                 the door to be let in during our open hours.
               </p>

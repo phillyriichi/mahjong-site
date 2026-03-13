@@ -2,6 +2,7 @@ import ConstrainedDiv from '../components/constrained-div'
 import { PageHeader } from '../components/header'
 import Page from '../components/page'
 import Section from '../components/section'
+import { Button } from '@heroui/button'
 
 const ContactUs = () => {
   return (
@@ -13,14 +14,15 @@ const ContactUs = () => {
             Most of our activity and planning is done via <b>Discord</b>. You can join our server by
             clicking the button below.
           </p>
-          {/* TODO: need to get the styling for this */}
-          <a
-            className="text-copy-brand-primary bg-background-brand-primary rounded-md text-lg font-bold px-4 py-2"
+          <Button
+            as="a"
+            size="lg"
             href="https://discord.gg/YAsRETMryS"
             target="_blank"
+            className="bg-copy-brand-primary font-semibold text-background-primary"
           >
             Discord
-          </a>
+          </Button>
           <p>
             To reach out to us via email, you can fill out the form below, or email us directly at{' '}
             <b>

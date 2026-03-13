@@ -10,5 +10,9 @@ export const SPA_ROUTES = {
   KOP: `${baseUrl}locations/kop`,
   CONTACT_US: `${baseUrl}contact-us`,
   LEAGUE: `${baseUrl}league`,
-  LEAGUE_WITH_TAB: `${baseUrl}league/:tab`
+  LEAGUE_WITH_TAB: `${baseUrl}league/:tab`,
+  LEAGUE_QUEUE: `${baseUrl}league/queue`,
+  LEAGUE_SCORE_ENTRY: `${baseUrl}league/score-entry`,
+  LEAGUE_RANKING: `${baseUrl}league/ranking`,
+  LEAGUE_GAME_LOGS: `${baseUrl}league/game-logs`
 }

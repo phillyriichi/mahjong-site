@@ -90,6 +90,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
     props.start,
     props.end
   )
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ['activityLogs', props.start, props.end] })
@@ -109,17 +110,16 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
       return true
     })
   }, [activityLogs, activityFilter, playerFilter])
-  const queryClient = useQueryClient()
+
+  if (isPlayersFetching || isActivityLogsFecthing) {
+    return (
+      <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
+        <Spinner label="Loading..." color="success" size="lg" />
+      </div>
+    )
+  }
 
   const topContent = () => {
-    if (isPlayersFetching || isActivityLogsFecthing) {
-      return (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-          <Spinner label="Loading..." color="success" size="lg" />
-        </div>
-      )
-    }
-
     return (
       <div>
         <div className="w-full row flex">
@@ -187,6 +187,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
                   isIconOnly
                   className="bg-transparent"
                   onPress={async () => {
+                    console.log('>>>', log, players)
                     if (
                       await ask({
                         title: `Sure to delete log?`,

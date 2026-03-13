@@ -40,6 +40,7 @@ const AdminSignIn = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerObject | null>(null)
   const [newPlayerName, setNewPlyaerName] = useState<string>('')
   const [newPlayerEmail, setNewPlyaerEmail] = useState<string>('')
+  const [newPlayerDiscordHandle, setNewPlyaerDiscordHandle] = useState<string>('')
   const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null)
   const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null)
   const [selectedQueue, setSelectedQueue] = useState<QueueType | null>(null)
@@ -181,6 +182,7 @@ const AdminSignIn = () => {
       const rst: { success: boolean; message?: string } = await addNewPlayer(
         newPlayerName,
         newPlayerEmail,
+        newPlayerDiscordHandle,
         selectedMembershipOperation,
         selectedPayment,
         resolvedPrice,
@@ -248,7 +250,7 @@ const AdminSignIn = () => {
           ) : (
             <>
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
-                <span className="text-sm font-medium md:min-w-[100px]">Player Name</span>
+                <span className="text-sm font-medium md:min-w-[100px]">Name</span>
                 <div className="flex-1 max-w-sm">
                   <Input
                     label=""
@@ -259,7 +261,7 @@ const AdminSignIn = () => {
                 </div>
               </div>
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
-                <span className="text-sm font-medium md:min-w-[100px]">Player Email</span>
+                <span className="text-sm font-medium md:min-w-[100px]">Email</span>
                 <div className="flex-1 max-w-sm">
                   <Input
                     type="email"
@@ -270,12 +272,19 @@ const AdminSignIn = () => {
                   />
                 </div>
               </div>
+              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
+                <span className="text-sm font-medium md:min-w-[100px]">Discord Handle</span>
+                <div className="flex-1 max-w-sm">
+                  <Input
+                    label=""
+                    placeholder="e.g. ichihime"
+                    value={newPlayerDiscordHandle}
+                    onValueChange={setNewPlyaerDiscordHandle}
+                  />
+                </div>
+              </div>
             </>
           )}
-
-          {newPlayerName}
-          {newPlayerEmail}
-
           {(selectedAdminOp == AdminOpType.MEMBERSHIP ||
             selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) && (
             <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-16">
