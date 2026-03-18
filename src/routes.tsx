@@ -4,18 +4,22 @@ import Index from './features'
 import FourOhFour from './features/four-oh-four'
 import ContactUs from './features/contact-us'
 import Gallery from './features/gallery'
-import Events from './features/events'
 import OldCity from './features/locations/old-city'
 import Kop from './features/locations/kop'
 import Admin from './features/admin'
 import League from './features/league'
 import { baseUrl, SPA_ROUTES } from './route-paths'
+import EventsCalendar from './features/events/calendar'
+import Pro2024 from './features/events/pro2024'
+import Pro2025 from './features/events/pro2025'
 
 const Routes = () => (
   <Switch>
     <Route path={SPA_ROUTES.CONTACT_US} component={ContactUs} />
     <Route path={SPA_ROUTES.GALLERY} component={Gallery} />
-    <Route path={SPA_ROUTES.EVENTS} component={Events} />
+    <Route path={SPA_ROUTES.EVENTS_CALENDAR} component={EventsCalendar} />
+    <Route path={SPA_ROUTES.EVENTS_PRO2024} component={Pro2024} />
+    <Route path={SPA_ROUTES.EVENTS_PRO2025} component={Pro2025} />
     <Route path={SPA_ROUTES.OLD_CITY} component={OldCity} />
     <Route path={SPA_ROUTES.KOP} component={Kop} />
     <Route path={SPA_ROUTES.ADMIN} component={Admin} />
@@ -23,7 +27,7 @@ const Routes = () => (
     <Route path={SPA_ROUTES.LEAGUE} component={League} />
     <Route path={SPA_ROUTES.LEAGUE_WITH_TAB} component={League} />
     <Route path={SPA_ROUTES.HOME} component={Index} />
-    // Redirects for legacy routes
+    {/*Redirects for legacy routes*/}
     <Route path="/kop.html">
       <Redirect to={SPA_ROUTES.KOP} />
     </Route>
@@ -34,7 +38,7 @@ const Routes = () => (
       <Redirect to={SPA_ROUTES.OLD_CITY} />
     </Route>
     <Route path="/events.html">
-      <Redirect to={SPA_ROUTES.EVENTS} />
+      <Redirect to={SPA_ROUTES.EVENTS_CALENDAR} />
     </Route>
     <Route path="/gallery.html">
       <Redirect to={SPA_ROUTES.GALLERY} />

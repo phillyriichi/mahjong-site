@@ -1,10 +1,12 @@
+import { Link } from 'wouter'
 import { Card, CardBody, CardHeader } from '@heroui/react'
-import ConstrainedDiv from '../components/constrained-div'
-import { HeaderTwo, PageHeader } from '../components/header'
-import Page from '../components/page'
-import Section from '../components/section'
+import ConstrainedDiv from '../../components/constrained-div'
+import { HeaderTwo, PageHeader } from '../../components/header'
+import Page from '../../components/page'
+import Section from '../../components/section'
+import { SPA_ROUTES } from '../../route-paths'
 
-const Events = () => {
+const EventsCalendar = () => {
   return (
     <Page title="Events - Philly Mah-Jawn Mahjong Club">
       <Section>
@@ -51,9 +53,15 @@ const Events = () => {
               />
             </CardHeader>
             <CardBody className="overflow-visible py-2 flex flex-col items-center">
-              <div className="w-full mt-8">
-                <h3>TODO PRO 2025</h3>
-                <h3>TODO PRO 2024</h3>
+              <div className="w-full mt-6">
+                <Link href={SPA_ROUTES.EVENTS_PRO2025}>
+                  <HeaderTwo text="Philadelphia Riichi Open 2025" />
+                </Link>
+              </div>
+              <div className="w-full mt-6">
+                <Link href={SPA_ROUTES.EVENTS_PRO2024}>
+                  <HeaderTwo text="Philadelphia Riichi Open 2024" />
+                </Link>
               </div>
             </CardBody>
           </Card>
@@ -63,4 +71,4 @@ const Events = () => {
   )
 }
 
-export default Events
+export default EventsCalendar

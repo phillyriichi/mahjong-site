@@ -6,7 +6,7 @@ if [[ $# == 0 ]]; then
 fi
 
 TAG=$1
-REMOTE=git@github.com:Eplistical/mj-migration.git
+REMOTE=git@github.com:phillyriichi/mahjong-site.git
 BRANCH=main
 
 set -x

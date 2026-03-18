@@ -196,7 +196,7 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
     if (isFetching) {
       return (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/30 backdrop-blur-[1px]">
-          <Spinner label="Loading..." color="success" size="lg" />
+          <Spinner label="Loading Transactions..." color="success" size="lg" />
         </div>
       )
     }
@@ -204,7 +204,7 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
   }
 
   return (
-    <div className="w-full mt-3 min-h-[200px]">
+    <div className="w-full mt-3 min-h-[400px]">
       <Table
         aria-label="admin-player-profile-table"
         layout="auto"

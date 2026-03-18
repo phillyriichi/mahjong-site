@@ -33,23 +33,23 @@ const MeetupCard = ({ title, description, times, href, img }: MeetupCardProps) =
           base: 'bg-transparent border-none'
         }}
       >
-        <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
-          <HeaderTwo text={title} />
-          <p className="text-copy-secondary text-lg">{description}</p>
-          <p className="mt-2 self-center text-copy-secondary text-lg">
-            {times.map((time, index) => (
-              <Fragment key={index}>
-                {time}
-                <br />
-              </Fragment>
-            ))}
-          </p>
-          <Link href={href}>
+        <Link href={href}>
+          <CardHeader className="pb-0 pt-2 px-4 flex-col items-start">
+            <HeaderTwo text={title} />
+            <p className="text-copy-secondary text-lg">{description}</p>
+            <p className="mt-2 self-center text-copy-secondary text-lg">
+              {times.map((time, index) => (
+                <Fragment key={`${title}-${index}`}>
+                  {time}
+                  <br />
+                </Fragment>
+              ))}
+            </p>
             <p className="mt-auto text-xl text-link-secondary flex items-center">
               Learn More <ArrowLongRightIcon className="size-5 pt-1 ml-1" />
             </p>
-          </Link>
-        </CardHeader>
+          </CardHeader>
+        </Link>
       </Card>
     </div>
     {img && (
@@ -301,12 +301,13 @@ const Index = () => {
                       The general timeline of our teaching is as follows:
                     </p>
                     <ul className="list-disc list-outside ml-10 space-y-2">
-                      <li>Learn the tiles</li>
-                      <li>
-                        Experience the gameplay with learning play order, claiming tiles, and
-                        creating winning hands
-                      </li>
-                      <li>Learn the various "Yaku" (Winning conditions)</li>
+                      {[
+                        'Learn the tiles',
+                        'Experience the gameplay with learning play order, claiming tiles, and creating winning hands',
+                        "Learn the various 'Yaku' (Winning conditions)"
+                      ].map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
                     </ul>
 
                     <p className="text-copy-secondary text-lg mt-3">

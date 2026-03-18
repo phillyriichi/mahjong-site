@@ -14,7 +14,13 @@ import {
   Avatar,
   NavbarMenuToggle,
   NavbarMenu,
-  NavbarMenuItem
+  NavbarMenuItem,
+  Dropdown,
+  DropdownMenu,
+  DropdownTrigger,
+  DropdownItem,
+  Accordion,
+  AccordionItem
 } from '@heroui/react'
 import { useAdminAuth } from './useAdminAuth'
 import { signInWithPopup, signOut } from 'firebase/auth'
@@ -80,7 +86,14 @@ const NavBar = () => {
   const navBarItems = [
     { text: 'Home', href: SPA_ROUTES.HOME },
     { text: 'League', href: SPA_ROUTES.LEAGUE },
-    { text: 'Events', href: SPA_ROUTES.EVENTS },
+    {
+      text: 'Events',
+      href: SPA_ROUTES.EVENTS_CALENDAR,
+      dropdownItems: [
+        { text: 'Calendar', href: SPA_ROUTES.EVENTS_CALENDAR },
+        { text: 'PRO2025', href: SPA_ROUTES.EVENTS_PRO2025 }
+      ]
+    },
     { text: 'Gallery', href: SPA_ROUTES.GALLERY },
     { text: 'Contact', href: SPA_ROUTES.CONTACT_US }
   ]
@@ -97,13 +110,53 @@ const NavBar = () => {
       </NavbarBrand>
 
       <NavbarContent className="hidden sm:flex gap-8" justify="end">
-        {navBarItems.map((item, index) => (
-          <NavbarItem key={index}>
-            <Link href={item.href} className="text-lg font-semibold text-copy-brand-primary">
-              {item.text}
-            </Link>
-          </NavbarItem>
-        ))}
+        {navBarItems.map((item, index) =>
+          item.dropdownItems ? (
+            <Dropdown
+              key={item.text}
+              classNames={{
+                content: 'p-0 border-0 shadow-xl'
+              }}
+            >
+              <NavbarItem>
+                <DropdownTrigger>
+                  <p className="text-lg font-semibold text-copy-brand-primary cursor-pointer">
+                    {item.text}
+                  </p>
+                </DropdownTrigger>
+              </NavbarItem>
+              <DropdownMenu
+                aria-label="events-dropdown"
+                classNames={{
+                  base: 'p-0 min-w-[200px]',
+                  list: 'bg-background-brand-primary rounded-md border border-divider shadow-md'
+                }}
+                itemClasses={{
+                  base: 'gap-4 px-3 py-2',
+                  title: 'text-lg text-copy-brand-primary'
+                }}
+              >
+                {item.dropdownItems.map((dropdownItem) => (
+                  <DropdownItem
+                    key={dropdownItem.href}
+                    textValue={dropdownItem.text}
+                    as={Link}
+                    href={dropdownItem.href}
+                    className="data-[hover=true]:bg-blue-50"
+                  >
+                    {dropdownItem.text}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          ) : (
+            <NavbarItem key={item.href}>
+              <Link href={item.href} className="text-lg font-semibold text-copy-brand-primary">
+                {item.text}
+              </Link>
+            </NavbarItem>
+          )
+        )}
         {userAvatar}
       </NavbarContent>
 
@@ -113,19 +166,53 @@ const NavBar = () => {
       </NavbarContent>
 
       <NavbarMenu className="bg-background-brand-primary">
-        {navBarItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <Link
-              className="w-full text-lg font-semibold text-copy-brand-primary"
-              color={
-                index === 2 ? 'warning' : index === navBarItems.length - 1 ? 'danger' : 'foreground'
-              }
-              href={item.href}
-            >
-              {item.text}
-            </Link>
-          </NavbarMenuItem>
-        ))}
+        {navBarItems.map((item, index) =>
+          item.dropdownItems ? (
+            <div className="w-full" key={item.text}>
+              <Accordion
+                showDivider={false}
+                hideIndicator
+                className="p-0"
+                itemClasses={{
+                  base: 'py-0 w-full',
+                  title: 'text-lg font-semibold text-copy-brand-primary py-0',
+                  trigger: 'px-0 py-0 h-auto',
+                  content: 'pt-2 pb-4'
+                }}
+              >
+                <AccordionItem key="events" aria-label="Events" title={item.text}>
+                  <div className="flex flex-col gap-3 pl-4">
+                    {item.dropdownItems.map((dropdownItem) => (
+                      <Link
+                        key={dropdownItem.href}
+                        href={dropdownItem.href}
+                        className="text-copy-brand-primary hover:text-primary transition-colors"
+                      >
+                        {dropdownItem.text}
+                      </Link>
+                    ))}
+                  </div>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          ) : (
+            <NavbarMenuItem key={item.href}>
+              <Link
+                className="w-full text-lg font-semibold text-copy-brand-primary"
+                color={
+                  index === 2
+                    ? 'warning'
+                    : index === navBarItems.length - 1
+                      ? 'danger'
+                      : 'foreground'
+                }
+                href={item.href}
+              >
+                {item.text}
+              </Link>
+            </NavbarMenuItem>
+          )
+        )}
       </NavbarMenu>
     </Navbar>
   )

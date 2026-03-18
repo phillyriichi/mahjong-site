@@ -151,10 +151,8 @@ const LeagueScoreEntry = (props: LeagueScoreEntryProps) => {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-full mx-auto px-4 gap-y-6">
-      <div className="w-full">
-        <ScoreInputForm records={records} setRecords={setRecords} onSubmit={onSubmitScores} />
-      </div>
+    <div className="flex flex-col w-full max-w-full mx-auto px-2 gap-y-6">
+      <ScoreInputForm records={records} setRecords={setRecords} onSubmit={onSubmitScores} />
     </div>
   )
 }

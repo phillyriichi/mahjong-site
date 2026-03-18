@@ -10,7 +10,7 @@ import postBuild from './post-build';
 export default defineConfig({
   plugins: [react(), tailwindcss(), postBuild()],
   // Trying to get the dev server to re-write just the /src/pages part of the path without affecting the prod build is a massive PITA
-  base: "/mj-migration/",
+  base: "/mahjong-site/",
   server: {
   },
   build: {

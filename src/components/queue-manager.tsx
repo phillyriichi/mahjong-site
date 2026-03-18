@@ -272,20 +272,19 @@ export default function QueueManager(props: QueueManagerProps) {
               signedinOnly={props.signedInOnly}
             />
           </div>
-          {props.showRulesetSelect && (
-            <div className="flex-1 max-w-[50%]">
-              <RulesetSelect
-                selectedRuleset={ruleset}
-                onSelectionChange={(ruleset) => {
-                  setRuleset(ruleset)
-                  if (props.onRulesetChange) {
-                    props.onRulesetChange(ruleset)
-                  }
-                }}
-                showAdmin
-              />
-            </div>
-          )}
+          {/* Use 'invisible' className because we still need ruleset to load default value */}
+          <div className={`flex-1 max-w-[50%] ${props.showRulesetSelect ? '' : 'invisible'}`}>
+            <RulesetSelect
+              selectedRuleset={ruleset}
+              onSelectionChange={(ruleset) => {
+                setRuleset(ruleset)
+                if (props.onRulesetChange) {
+                  props.onRulesetChange(ruleset)
+                }
+              }}
+              showAdmin
+            />
+          </div>
         </div>
         <div className="flex flex-row items-end gap-2">
           <div className="flex-shrink-0">
