@@ -320,12 +320,14 @@ export function loadAllPlayers(): PlayerObject[] {
  * @returns fetched player data.
  */
 export async function fetchPlayers(): Promise<PlayersMap> {
+  console.log('>>> now fetching players...')
   const dataToPost = { action: 'load_players' }
   const response = await axios.post(BACKEND_URL, dataToPost)
   const playersMap: { [key: number]: PlayerObject } = {}
   if (response.data.players) {
     response.data.players.forEach((item: PlayerObject) => (playersMap[item.id] = { ...item }))
   }
+  console.log('>>> fetched playerMap with size=', Object.keys(playersMap).length)
   return playersMap
 }
 

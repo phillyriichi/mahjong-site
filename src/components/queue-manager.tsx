@@ -17,13 +17,14 @@ import {
   resetQueue,
   startNewShuffle
 } from './backend-manager'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import PlayerSelect from './player-select'
 import QueueButtonGroup from './queue-button-group'
 import { Icon } from '@iconify/react'
 import RulesetSelect from './ruleset-select'
 import useConfirm from './confirm-modal'
 import { useQueryClient } from '@tanstack/react-query'
+import DividerWithText from './divider-with-text'
 
 const QUEUES = {
   [QueueType.LEAGUE]: {
@@ -87,7 +88,7 @@ export default function QueueManager(props: QueueManagerProps) {
   const { ask, ConfirmModal } = useConfirm()
   const queryClient = useQueryClient()
 
-  const generateQueueFromItems = (items: { [key: string]: PlayerObject[] }) => {
+  const generatedQueueFromItems = useMemo(() => {
     const generatedQueue: { [key: string]: any } = {}
     let nonBreakPlayers: number = 0
     Object.entries(items).forEach(([queue, players]) => {
@@ -117,9 +118,11 @@ export default function QueueManager(props: QueueManagerProps) {
     })
     return {
       generatedQueue: generatedQueue,
-      nonBreakPlayers: nonBreakPlayers
+      nonBreakPlayers: nonBreakPlayers,
+      estimatedTables: Math.floor(nonBreakPlayers / (ruleset?.numPlayers ?? 4)),
+      estimatedObservers: nonBreakPlayers % (ruleset?.numPlayers ?? 4)
     }
-  }
+  }, [items])
 
   useEffect(() => {
     if (!players || !queuedPlayers) {
@@ -135,8 +138,20 @@ export default function QueueManager(props: QueueManagerProps) {
     Object.entries(queuedPlayers).forEach(([playerId, item]: any) => {
       const aggregated = aggregateQueueLabels(item.labels)
       if (aggregated in newItems) {
-        newItems[aggregated].push(players[playerId])
+        if (players[playerId]) {
+          newItems[aggregated].push(players[playerId])
+        } else {
+          // this happens if a new player is created. In this case we create a tmp PlayerObject, and force refetching players.
+          queryClient.invalidateQueries({ queryKey: ['players'] })
+          newItems[aggregated].push({
+            id: playerId,
+            name: `player-${playerId}`
+          })
+        }
       }
+    })
+    Object.keys(newItems).forEach((key) => {
+      newItems[key] = newItems[key].toSorted(playerSorterFn)
     })
     setItems(newItems)
   }, [queuedPlayers, players])
@@ -430,53 +445,62 @@ export default function QueueManager(props: QueueManagerProps) {
         )}
       </DndContext>
       {props.isAdmin && (
-        <div className="flex flex-row items-end gap-2 mt-3">
-          <Button
-            color="primary"
-            className="px-3 font-bold ml-1"
-            onPress={async () => {
-              if (!ruleset || !players) {
-                return
-              }
-              const { generatedQueue, nonBreakPlayers } = generateQueueFromItems(items)
-              if (nonBreakPlayers < ruleset.numPlayers) {
-                alertWithToast(
-                  'warning',
-                  `Needs at least ${ruleset.numPlayers} non-break players`,
-                  `Insufficient players`
-                )
-                return
-              }
-              await startNewShuffle(ruleset.id, generatedQueue, prioritized, 'FULLY_RANDOM')
-              queryClient.invalidateQueries({ queryKey: ['scheduledGames', ruleset.id] })
-              alertWithToast('success', ``, `Games scheduled.`)
-            }}
-          >
-            Start New Shuffle
-          </Button>
-          <Button
-            color="danger"
-            className="px-3 font-bold ml-1"
-            onPress={async () => {
-              if (
-                await ask({
-                  title: `Sure to reset [${ruleset?.name}] queue?`,
-                  messages: [],
-                  confirmText: 'Reset',
-                  type: 'danger'
-                })
-              ) {
-                if (!ruleset) {
+        <div className="w-full mt-2">
+          <DividerWithText
+            text={`Estimated: ${generatedQueueFromItems.estimatedTables} Tables + ${generatedQueueFromItems.estimatedObservers} Observers`}
+          />
+          <div className="flex flex-row items-end gap-2 mt-3">
+            <Button
+              color="primary"
+              className="px-3 font-bold ml-1"
+              onPress={async () => {
+                if (!ruleset || !players) {
                   return
                 }
-                await resetQueue(ruleset.id)
-                queryClient.invalidateQueries({ queryKey: ['queuedPlayers', ruleset.id] })
-              }
-            }}
-          >
-            Reset Queue
-          </Button>
-          <ConfirmModal />
+                if (generatedQueueFromItems.nonBreakPlayers < ruleset.numPlayers) {
+                  alertWithToast(
+                    'warning',
+                    `Needs at least ${ruleset.numPlayers} non-break players`,
+                    `Insufficient players`
+                  )
+                  return
+                }
+                await startNewShuffle(
+                  ruleset.id,
+                  generatedQueueFromItems.generatedQueue,
+                  prioritized,
+                  'FULLY_RANDOM'
+                )
+                queryClient.invalidateQueries({ queryKey: ['scheduledGames', ruleset.id] })
+                alertWithToast('success', ``, `Games scheduled.`)
+              }}
+            >
+              Start New Shuffle
+            </Button>
+            <Button
+              color="danger"
+              className="px-3 font-bold ml-1"
+              onPress={async () => {
+                if (
+                  await ask({
+                    title: `Sure to reset [${ruleset?.name}] queue?`,
+                    messages: [],
+                    confirmText: 'Reset',
+                    type: 'danger'
+                  })
+                ) {
+                  if (!ruleset) {
+                    return
+                  }
+                  await resetQueue(ruleset.id)
+                  queryClient.invalidateQueries({ queryKey: ['queuedPlayers', ruleset.id] })
+                }
+              }}
+            >
+              Reset Queue
+            </Button>
+            <ConfirmModal />
+          </div>
         </div>
       )}
     </div>

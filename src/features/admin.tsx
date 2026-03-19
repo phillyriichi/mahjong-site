@@ -10,7 +10,7 @@ import AdminGameShuffle from '../components/admin-game-shuffle'
 import AdminRulesets from '../components/admin-rulesets'
 import { useAdminAuth } from '../components/useAdminAuth'
 import { useParams } from 'wouter'
-import { useState } from 'react'
+import { useLocalStorage } from 'usehooks-ts'
 
 const AVAILABLE_TABS: { [key: string]: string } = {
   ['sign-in']: 'sign-in-tab',
@@ -21,7 +21,7 @@ const AVAILABLE_TABS: { [key: string]: string } = {
 
 const Admin = () => {
   const params = useParams()
-  const [selectedTab, setSelectedTab] = useState<string>(
+  const [selectedTab, setSelectedTab] = useLocalStorage<string>(
     params.tab && AVAILABLE_TABS[params.tab]
       ? AVAILABLE_TABS[params.tab]
       : AVAILABLE_TABS['sign-in']

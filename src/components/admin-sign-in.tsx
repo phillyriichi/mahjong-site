@@ -41,9 +41,15 @@ const AdminSignIn = () => {
   const [newPlayerName, setNewPlyaerName] = useState<string>('')
   const [newPlayerEmail, setNewPlyaerEmail] = useState<string>('')
   const [newPlayerDiscordHandle, setNewPlyaerDiscordHandle] = useState<string>('')
-  const [selectedLocation, setSelectedLocation] = useState<LocationType | null>(null)
+  const [selectedLocation, setSelectedLocation] = useLocalStorage<LocationType | null>(
+    'admin-selectedLoation',
+    null
+  )
   const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null)
-  const [selectedQueue, setSelectedQueue] = useState<QueueType | null>(null)
+  const [selectedQueue, setSelectedQueue] = useLocalStorage<QueueType | null>(
+    'admin-selectedQueue',
+    null
+  )
   const [selectedAdminOp, setSelectedAdminOp] = useLocalStorage<AdminOpType>(
     'admin-op',
     AdminOpType.SIGN_IN
@@ -145,6 +151,7 @@ const AdminSignIn = () => {
       }
       alertWithToast('success', `${selectedPlayer.name} is signed in.`)
       setActionCount((prev) => prev + 1)
+      setSelectedPayment(null)
     } else if (selectedAdminOp == AdminOpType.MEMBERSHIP) {
       // handle membership operations
       if (!selectedPlayer) {
@@ -170,6 +177,7 @@ const AdminSignIn = () => {
       }
       alertWithToast('success', `${selectedMembershipOperation} granted to ${selectedPlayer.name}`)
       setActionCount((prev) => prev + 1)
+      setSelectedPayment(null)
     } else if (selectedAdminOp == AdminOpType.FIRST_TIME_VISIT) {
       // handle first time visit player
       if (newPlayerName.length == 0) {
@@ -194,6 +202,7 @@ const AdminSignIn = () => {
       }
       alertWithToast('success', `Added ${newPlayerName} for ${selectedMembershipOperation}`)
       setActionCount((prev) => prev + 1)
+      setSelectedPayment(null)
       queryClient.invalidateQueries({ queryKey: ['players'] })
     } else {
       alertWithToast('danger', `Invalid oepration ${selectedAdminOp}`)

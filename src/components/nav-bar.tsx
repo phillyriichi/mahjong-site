@@ -110,7 +110,7 @@ const NavBar = () => {
       </NavbarBrand>
 
       <NavbarContent className="hidden sm:flex gap-8" justify="end">
-        {navBarItems.map((item, index) =>
+        {navBarItems.map((item) =>
           item.dropdownItems ? (
             <Dropdown
               key={item.text}
