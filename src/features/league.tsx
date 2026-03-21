@@ -10,8 +10,9 @@ import { type RulesetObject, type SeasonObject } from '../components/backend-man
 import RulesetSelect from '../components/ruleset-select'
 import SeasonSelect from '../components/season-select'
 import LegaueSelfQueue from '../components/league-self-queue'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams, useParams } from 'wouter'
+import useLocalStorageWithTTL from '../components/use-local-storage-with-ttl'
 
 const AVAILABLE_TABS: { [key: string]: string } = {
   ['queue']: 'league-queue-tab',
@@ -23,13 +24,21 @@ const AVAILABLE_TABS: { [key: string]: string } = {
 const League = () => {
   const [searchParams] = useSearchParams()
   const params = useParams()
-  const [selectedTab, setSelectedTab] = useState<string>(
+  const [selectedTab, setSelectedTab] = useLocalStorageWithTTL<string>(
+    'league-tab',
     params.tab && AVAILABLE_TABS[params.tab]
       ? AVAILABLE_TABS[params.tab]
       : AVAILABLE_TABS['ranking']
   )
   const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
   const [season, setSeason] = useState<SeasonObject | null>(null)
+
+  // enforce tab if it is in params
+  useEffect(() => {
+    if (params.tab && params.tab in AVAILABLE_TABS) {
+      setSelectedTab(AVAILABLE_TABS[params.tab])
+    }
+  }, [params.tab])
 
   const header = (hasSeason: boolean = true) => {
     return (

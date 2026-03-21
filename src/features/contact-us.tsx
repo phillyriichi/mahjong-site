@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { alertWithToast, sendContactEmail } from '../components/backend-manager'
 import ConstrainedDiv from '../components/constrained-div'
 import { HeaderTwo, PageHeader, Paragraph } from '../components/header'
 import Page from '../components/page'
@@ -6,10 +8,10 @@ import { Button } from '@heroui/button'
 import { Input, Textarea, Card, CardBody, Link as HeroUILink } from '@heroui/react'
 
 const ContactUs = () => {
-  const handleSubmit = (e: any) => {
-    e.preventDefault()
-    console.log('Form submitted -- TO IMPLEMENT')
-  }
+  const [name, setName] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
+  const [message, setMessage] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   return (
     <Page title="Contact Us - Philly Mah-Jawn Mahjong Club">
@@ -43,13 +45,32 @@ const ContactUs = () => {
             <CardBody className="gap-4">
               <HeaderTwo text="Email Form" className="text-center" />
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={async (e) => {
+                  // prevent default behavior of refreshing the page.
+                  e.preventDefault()
+                  setIsSubmitting(true)
+                  const rst = await sendContactEmail(name, email, message)
+                  if (rst.success) {
+                    alertWithToast('success', 'Submitted')
+                    setName('')
+                    setEmail('')
+                    setMessage('')
+                  } else {
+                    alertWithToast('warning', rst.message, 'Warning')
+                  }
+                  setIsSubmitting(false)
+                }}
+              >
                 <Input
                   isRequired
                   type="text"
                   label="Name"
                   placeholder="Enter your name"
                   name="name"
+                  value={name}
+                  onValueChange={setName}
                 />
 
                 <Input
@@ -58,6 +79,8 @@ const ContactUs = () => {
                   label="Email"
                   placeholder="Enter your email"
                   name="email"
+                  value={email}
+                  onValueChange={setEmail}
                 />
 
                 <Textarea
@@ -65,11 +88,14 @@ const ContactUs = () => {
                   label="Message"
                   placeholder="Enter your message"
                   name="message"
+                  value={message}
+                  onValueChange={setMessage}
                 />
 
                 <Button
                   type="submit"
                   className="bg-copy-brand-primary font-semibold text-background-primary mt-2"
+                  isLoading={isSubmitting}
                 >
                   Send
                 </Button>

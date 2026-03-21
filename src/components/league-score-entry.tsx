@@ -11,6 +11,8 @@ import { hasDuplication } from './utilities'
 import useConfirm from './confirm-modal'
 import ScoreInputForm from './score-input-form'
 import { useSearchParams } from 'wouter'
+import { Divider } from '@heroui/divider'
+import MultiLineAccordion from './multi-line-accordion'
 
 function validateRecords(ruleset: RulesetObject | null | undefined, records: PlayerScoreRecord[]) {
   if (!ruleset) {
@@ -153,6 +155,16 @@ const LeagueScoreEntry = (props: LeagueScoreEntryProps) => {
   return (
     <div className="flex flex-col w-full max-w-full mx-auto px-2 gap-y-6">
       <ScoreInputForm records={records} setRecords={setRecords} onSubmit={onSubmitScores} />
+      <Divider />
+      <MultiLineAccordion
+        title="Instruction"
+        textlines={[
+          'Choose players and enter their scores as is (no need to subtract starting points or divide)',
+          'The scores should add up to the correct number, unless there were leftover riichi sticks.',
+          'If you made a mistake or need to add a player, be sure to contact a staff people.',
+          'If there were more than 3 chombos for a person please seek help immediately.'
+        ]}
+      ></MultiLineAccordion>
     </div>
   )
 }

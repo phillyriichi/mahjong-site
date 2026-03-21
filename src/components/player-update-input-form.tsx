@@ -117,6 +117,7 @@ const PlayerUpdateInputForm = () => {
             <Input
               className="max-w-xs"
               label=""
+              aria-label="Player Name"
               placeholder="Name"
               value={updatedPlayerName}
               onValueChange={setUpdatedPlayerName}
@@ -129,6 +130,7 @@ const PlayerUpdateInputForm = () => {
             <Input
               className="max-w-xs"
               label=""
+              aria-label="Player Email"
               placeholder="Email"
               type="email"
               value={updatedPlayerEmail}
@@ -142,6 +144,7 @@ const PlayerUpdateInputForm = () => {
             <Input
               className="max-w-xs"
               label=""
+              aria-label="Discord Handle"
               placeholder="Discord Handle"
               value={updatedPlayerDiscordHandle}
               onValueChange={setUpdatedPlayerDiscordHandle}

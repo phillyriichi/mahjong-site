@@ -1,8 +1,7 @@
-import { Button, DateRangePicker, Divider, Input } from '@heroui/react'
+import { Accordion, AccordionItem, Button, DateRangePicker, Divider, Input } from '@heroui/react'
 import { getLocalTimeZone, today } from '@internationalized/date'
 import { Form } from '@heroui/form'
 import ActivityLogsTable from './activity-logs-table'
-import { useLocalStorage } from 'usehooks-ts'
 import ActivityLogsStats from './activity-logs-stats'
 import {
   addNewPlayer,
@@ -29,6 +28,8 @@ import AdminOpButtonGroup from './admin-op-button-group'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import useConfirm from './confirm-modal'
+import useLocalStorageWithTTL from './use-local-storage-with-ttl'
+import MultiLineAccordion from './multi-line-accordion'
 
 const AdminSignIn = () => {
   const queryClient = useQueryClient()
@@ -41,16 +42,16 @@ const AdminSignIn = () => {
   const [newPlayerName, setNewPlyaerName] = useState<string>('')
   const [newPlayerEmail, setNewPlyaerEmail] = useState<string>('')
   const [newPlayerDiscordHandle, setNewPlyaerDiscordHandle] = useState<string>('')
-  const [selectedLocation, setSelectedLocation] = useLocalStorage<LocationType | null>(
-    'admin-selectedLoation',
+  const [selectedLocation, setSelectedLocation] = useLocalStorageWithTTL<LocationType | null>(
+    'admin-selcted-location',
     null
   )
   const [selectedPayment, setSelectedPayment] = useState<PaymentType | null>(null)
-  const [selectedQueue, setSelectedQueue] = useLocalStorage<QueueType | null>(
-    'admin-selectedQueue',
+  const [selectedQueue, setSelectedQueue] = useLocalStorageWithTTL<QueueType | null>(
+    'admin-selected-queue',
     null
   )
-  const [selectedAdminOp, setSelectedAdminOp] = useLocalStorage<AdminOpType>(
+  const [selectedAdminOp, setSelectedAdminOp] = useLocalStorageWithTTL<AdminOpType>(
     'admin-op',
     AdminOpType.SIGN_IN
   )
@@ -325,6 +326,21 @@ const AdminSignIn = () => {
         </Button>
       </Form>
       <ConfirmModal />
+
+      <Divider className="mt-2" />
+      <MultiLineAccordion
+        title="Instruction"
+        textlines={[
+          'Select action, fill in related fields, and (optionally) queue type to sign in a player.',
+          'Before submitting, double check the resolved cost.',
+          'A player wihtout active membership will proceed with NON_MEMBER visit. If the player would like to update/extend memberhsip, switch to Membership action.',
+          'For a first-time player that is not in our database, use FirstTimeVisit action.',
+          'Click Submit to proceed, upon success the system will add a log and post a discord notification to admin channel.',
+          'If a queue type is selected, the player will also be enqueued.',
+          'Multiple sign-in attempts within the same day for a player will be prevented.',
+          'Contact tech people if something goes wrong.'
+        ]}
+      ></MultiLineAccordion>
 
       <DividerWithText text={'Activity Stats and Logs'} className="flex items-center w-full my-3" />
       <div className="flex w-full flex-wrap md:flex-nowrap mb-6 md:mb-0 gap-4">

@@ -203,11 +203,11 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
                   onPress={async () => {
                     if (
                       await ask({
-                        title: `Sure to delete log?`,
+                        title: `Sure to revert log?`,
                         messages: [
                           `[${players![log.playerId]?.name}] [${log.activity}] [${log.payment.type} $${log.payment.price}]`
                         ],
-                        confirmText: 'Delete',
+                        confirmText: 'Revert',
                         type: 'danger'
                       })
                     ) {
@@ -216,7 +216,7 @@ const ActivityLogsTable = (props: ActivityLogsTableProps) => {
                     }
                   }}
                 >
-                  <Icon icon="material-symbols:delete" height={20} width={20} />
+                  <Icon icon="grommet-icons:revert" height={20} width={20} />
                 </Button>
               </TableCell>
             </TableRow>

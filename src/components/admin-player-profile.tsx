@@ -126,6 +126,7 @@ const AdminPlayerProfile = () => {
             isClearable
             className="w-full"
             placeholder="Search Player"
+            aria-label="Search Player"
             size="sm"
             startContent={<Icon icon="material-symbols:search" />}
             onClear={() => {
@@ -174,7 +175,6 @@ const AdminPlayerProfile = () => {
           topContent={topContent()}
           sortDescriptor={sortDescriptor}
           onSortChange={(des) => {
-            console.log('>>> des = ', des)
             setSortDescriptor(des)
           }}
           classNames={{
@@ -184,20 +184,16 @@ const AdminPlayerProfile = () => {
         >
           <TableHeader>
             <TableColumn key="id" allowsSorting>
-              {' '}
-              ID{' '}
+              ID
             </TableColumn>
             <TableColumn key="name" allowsSorting>
-              {' '}
-              Name{' '}
+              Name
             </TableColumn>
             <TableColumn key="membership"> Active Membership </TableColumn>
             <TableColumn key="email" allowsSorting>
-              {' '}
-              Email{' '}
+              Email
             </TableColumn>
             <TableColumn key="discordHandle" allowsSorting>
-              {' '}
               Discord Handle
             </TableColumn>
           </TableHeader>

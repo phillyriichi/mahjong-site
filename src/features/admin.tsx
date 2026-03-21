@@ -1,8 +1,7 @@
-import { PageHeader } from '../components/header'
+import { PageHeader, Paragraph } from '../components/header'
 import Page from '../components/page'
 import ConstrainedDiv from '../components/constrained-div'
 import Section from '../components/section'
-import LoginForm from '../components/login'
 import { Tabs, Tab, Divider } from '@heroui/react'
 import AdminPlayerProfile from '../components/admin-player-profile'
 import AdminSignIn from '../components/admin-sign-in'
@@ -10,7 +9,8 @@ import AdminGameShuffle from '../components/admin-game-shuffle'
 import AdminRulesets from '../components/admin-rulesets'
 import { useAdminAuth } from '../components/useAdminAuth'
 import { useParams } from 'wouter'
-import { useLocalStorage } from 'usehooks-ts'
+import { useEffect } from 'react'
+import useLocalStorageWithTTL from '../components/use-local-storage-with-ttl'
 
 const AVAILABLE_TABS: { [key: string]: string } = {
   ['sign-in']: 'sign-in-tab',
@@ -21,12 +21,20 @@ const AVAILABLE_TABS: { [key: string]: string } = {
 
 const Admin = () => {
   const params = useParams()
-  const [selectedTab, setSelectedTab] = useLocalStorage<string>(
+  const [selectedTab, setSelectedTab] = useLocalStorageWithTTL<string>(
+    'amdin-tab',
     params.tab && AVAILABLE_TABS[params.tab]
       ? AVAILABLE_TABS[params.tab]
       : AVAILABLE_TABS['sign-in']
   )
   const { isAdmin } = useAdminAuth()
+
+  // enforce tab if it is in params
+  useEffect(() => {
+    if (params.tab && params.tab in AVAILABLE_TABS) {
+      setSelectedTab(AVAILABLE_TABS[params.tab])
+    }
+  }, [params.tab])
 
   return (
     <>
@@ -66,12 +74,10 @@ const Admin = () => {
                 <Divider className="mt-2 mb-8" />
               </div>
             ) : (
-              <></>
+              <Paragraph className="text-center">
+                The current user does not have admin access.
+              </Paragraph>
             )}
-            <div className="flex">
-              <div className="flex-1"></div>
-              <LoginForm />
-            </div>
           </ConstrainedDiv>
         </Section>
       </Page>

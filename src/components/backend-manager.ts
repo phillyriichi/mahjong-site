@@ -320,14 +320,12 @@ export function loadAllPlayers(): PlayerObject[] {
  * @returns fetched player data.
  */
 export async function fetchPlayers(): Promise<PlayersMap> {
-  console.log('>>> now fetching players...')
   const dataToPost = { action: 'load_players' }
   const response = await axios.post(BACKEND_URL, dataToPost)
   const playersMap: { [key: number]: PlayerObject } = {}
   if (response.data.players) {
     response.data.players.forEach((item: PlayerObject) => (playersMap[item.id] = { ...item }))
   }
-  console.log('>>> fetched playerMap with size=', Object.keys(playersMap).length)
   return playersMap
 }
 
@@ -970,9 +968,25 @@ export async function assignWinner(
     season_id: seasonId,
     winner_id: winnerId ?? null
   }
-  console.log('data to post = ', dataToPost)
   const response = (await axios.post(BACKEND_URL, dataToPost)).data
-  console.log('response = ', response)
   const [sucecss, msg] = response
   return { success: sucecss, msg: msg }
+}
+
+/**
+ * Send contact email.
+ *
+ * @param name the user's name
+ * @param email the user's email address
+ * @param message the message content.
+ */
+export async function sendContactEmail(name: string, email: string, message: string) {
+  const dataToPost = {
+    action: 'send_contact_email',
+    name: name,
+    email_addr: email,
+    message: message
+  }
+  const response = (await axios.post(BACKEND_URL, dataToPost)).data
+  return response
 }

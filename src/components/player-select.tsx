@@ -62,6 +62,7 @@ const PlayerSelect = (props: PlayerSelectProps) => {
       size={props.size ?? 'sm'}
       className={props.className ?? 'max-w-xs'}
       label={props.label ?? 'Player'}
+      aria-label={props.label || props.placeholder || 'Select a player'}
       labelPlacement={props.labelPlacement ?? 'inside'}
       isLoading={isPending}
       selectedKey={playerId?.toString() ?? undefined}

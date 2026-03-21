@@ -10,7 +10,7 @@ const AdminGameShuffle = () => {
   return (
     <div className="w-full">
       <QueueManager
-        pollIntervalMs={3000}
+        pollIntervalMs={2000}
         isAdmin={true}
         signedInOnly={false}
         showRulesetSelect

@@ -203,6 +203,14 @@ const ActivityLogsStats = (props: ActivityLogsStatsProps) => {
     return <div></div>
   }
 
+  if (isFetching) {
+    return (
+      <div className="w-full overflow-x-auto mt-3 flex justify-center">
+        <Spinner label="Loading Transactions..." color="success" size="lg" />
+      </div>
+    )
+  }
+
   return (
     <div className="w-full mt-3 min-h-[400px]">
       <Table

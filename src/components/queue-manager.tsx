@@ -1,7 +1,7 @@
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { Droppable } from './draggable'
 import { Draggable } from './droppable'
-import { Button, Chip, Form } from '@heroui/react'
+import { Button, Chip, Divider, Form } from '@heroui/react'
 import {
   aggregateQueueLabels,
   alertWithToast,
@@ -17,7 +17,7 @@ import {
   resetQueue,
   startNewShuffle
 } from './backend-manager'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type Key } from 'react'
 import PlayerSelect from './player-select'
 import QueueButtonGroup from './queue-button-group'
 import { Icon } from '@iconify/react'
@@ -25,6 +25,8 @@ import RulesetSelect from './ruleset-select'
 import useConfirm from './confirm-modal'
 import { useQueryClient } from '@tanstack/react-query'
 import DividerWithText from './divider-with-text'
+import BaseSingleSelect from './base-single-select'
+import MultiLineAccordion from './multi-line-accordion'
 
 const QUEUES = {
   [QueueType.LEAGUE]: {
@@ -59,6 +61,36 @@ const QUEUES = {
   }
 }
 
+const SHUFFLING_ALGORITHMS = [
+  {
+    id: 'FULLY_RANDOM',
+    selectText: 'Fully Random',
+    description: [
+      'Decide sit-out players using staff > non-prioritized > prioritized preference.',
+      'Assign these players as observers.',
+      'Decide casual table players using casual > staff > flexible > league > prioritized-league preference.',
+      'Assign these players to casual group.',
+      'Assign all other players to league group.',
+      'Within each group, randomly shuffle again and assign tables.'
+    ]
+  },
+  {
+    id: 'SKILL_BASED',
+    selectText: 'Skill Based',
+    description: [
+      'Decide sit-out players using staff > non-prioritized > prioritized preference.',
+      'Assign these players as observers.',
+      'Decide casual table players using casual > staff > flexible > league > prioritized-league preference.',
+      'Assign these players to casual group.',
+      'Assign all other players to league group.',
+      'Within casual group, randomly shuffle again and assign tables.',
+      'For league group, sort N players by their profile r-value, each player has a index (between 0 and N-1).',
+      'Compute a weight = index + randint(-K, K) for each player, K is a parameter that allows some randomness',
+      'Sort again by the randomized weight and assign players to tables based on the sorted order.'
+    ]
+  }
+]
+
 type QueueManagerProps = {
   pollIntervalMs: number
   backgroundPollIntervalMs?: number
@@ -72,6 +104,7 @@ export default function QueueManager(props: QueueManagerProps) {
   const [ruleset, setRuleset] = useState<RulesetObject | null>(null)
   const [player, setPlayer] = useState<PlayerObject | null>(null)
   const [queue, setQueue] = useState<QueueType | null>(null)
+  const [algorithm, setAlgorithm] = useState<string>(SHUFFLING_ALGORITHMS[0].id)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { data: queuedPlayers } = useQueuedPlayers(ruleset?.id, props.pollIntervalMs)
@@ -337,8 +370,11 @@ export default function QueueManager(props: QueueManagerProps) {
             .map((queue) => {
               const containerId = `${queue.id}`
               return (
-                <div className={queue.id == QueueType.LEAGUE ? 'col-span-2' : 'col-span-1'}>
-                  <Droppable key={containerId} id={containerId}>
+                <div
+                  key={containerId}
+                  className={queue.id == QueueType.LEAGUE ? 'col-span-2' : 'col-span-1'}
+                >
+                  <Droppable id={containerId}>
                     <div className="w-full min-h-[120px] px-3 py-2 bg-content1 shadow-medium rounded-2xl border border-white/20 mt-2 transition-all">
                       <h3 className="text-lg font-bold" style={{ color: queue.color }}>
                         {queue.title}({items[containerId].length})
@@ -444,11 +480,51 @@ export default function QueueManager(props: QueueManagerProps) {
           </div>
         )}
       </DndContext>
+      {!props.isAdmin && (
+        <div className="w-full mt-2">
+          <Divider />
+          <MultiLineAccordion
+            title="Help"
+            textlines={[
+              'Sign in to find your name here.',
+              'Pick or update your preference and enqueue.',
+              'Enqueue again or drag-and-drop, to change your queue',
+              'To dequeue: ask a staff member.'
+            ]}
+          ></MultiLineAccordion>
+        </div>
+      )}
       {props.isAdmin && (
         <div className="w-full mt-2">
+          <Divider />
+          <MultiLineAccordion
+            title="Instruction"
+            textlines={[
+              'Select a player and the preference to enqueue',
+              'Use Break to ignore a player without de-queueing them.',
+              'Once all players are in the pool, select the algorithm and click "Start new Shuffle" to schedule. Optionally the results can be posted to discord.',
+              'Players with "Pri" enabled are prioritized, they will not be in the observers when possible.',
+              'A league-only player can still be assigned to a casual game if no other choice.'
+            ]}
+          ></MultiLineAccordion>
+
           <DividerWithText
             text={`Estimated: ${generatedQueueFromItems.estimatedTables} Tables + ${generatedQueueFromItems.estimatedObservers} Observers`}
           />
+
+          <div>
+            <BaseSingleSelect
+              label="Algorithm"
+              isLoading={false}
+              availableItems={SHUFFLING_ALGORITHMS}
+              selectedKey={algorithm}
+              onSelectionChange={(key: Key) => {
+                const found = SHUFFLING_ALGORITHMS.find((item) => item.id === key)
+                setAlgorithm(found!.id)
+              }}
+            />
+          </div>
+
           <div className="flex flex-row items-end gap-2 mt-3">
             <Button
               color="primary"
@@ -469,7 +545,7 @@ export default function QueueManager(props: QueueManagerProps) {
                   ruleset.id,
                   generatedQueueFromItems.generatedQueue,
                   prioritized,
-                  'FULLY_RANDOM'
+                  algorithm
                 )
                 queryClient.invalidateQueries({ queryKey: ['scheduledGames', ruleset.id] })
                 alertWithToast('success', ``, `Games scheduled.`)

@@ -37,6 +37,7 @@ const BaseSingleSelect = (props: BaseSingleSelectProps) => {
     <Select
       className={props.className ?? 'max-w-xs'}
       label={props.label}
+      aria-label={props.label}
       isLoading={props.isLoading}
       selectedKeys={useMemo(() => {
         return props.availableItems.some((s) => s.id === props.selectedKey)

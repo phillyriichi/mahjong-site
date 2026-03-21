@@ -102,7 +102,14 @@ const RankingTable = (props: RankingTableProps) => {
     if (daysLeft < 0) {
       return {
         bar: (
-          <Progress minValue={0} maxValue={totalDays} value={totalDays} size="lg" color={color} />
+          <Progress
+            aria-label="Season progress"
+            minValue={0}
+            maxValue={totalDays}
+            value={totalDays}
+            size="lg"
+            color={color}
+          />
         ),
         label: `Finished`
       }
@@ -111,6 +118,7 @@ const RankingTable = (props: RankingTableProps) => {
     return {
       bar: (
         <Progress
+          aria-label="Season progress"
           minValue={0}
           maxValue={totalDays}
           value={totalDays - daysLeft}
@@ -127,6 +135,7 @@ const RankingTable = (props: RankingTableProps) => {
       <Input
         isClearable
         className="w-full"
+        aria-label="Search Player"
         placeholder="Search Player"
         size="sm"
         startContent={<Icon icon="material-symbols:search" />}
@@ -155,8 +164,7 @@ const RankingTable = (props: RankingTableProps) => {
     { name: 'Player', allowsSorting: true, className: 'w-[35%] text-left' },
     { name: 'Score', allowsSorting: true, className: 'w-[20%] text-left' },
     { name: 'Games', allowsSorting: true, className: 'w-[25%] text-left' },
-    { name: 'Chombo', allowsSorting: true, className: 'w-[auto] text-right' },
-    { name: '', allowsSorting: false, className: 'w-10px' }
+    { name: 'Stats', allowsSorting: false, className: 'w-10px text-left' }
   ]
 
   return (
@@ -181,7 +189,11 @@ const RankingTable = (props: RankingTableProps) => {
       >
         <TableHeader columns={headerColumns}>
           {(column) => (
-            <TableColumn key={column.name} className={column.className}>
+            <TableColumn
+              key={column.name}
+              aria-label={column.name || 'Actions'}
+              className={column.className}
+            >
               {column.name}
             </TableColumn>
           )}
@@ -208,12 +220,17 @@ const RankingTable = (props: RankingTableProps) => {
                   <span className="text-xs text-default-400 leading-none mt-1">
                     {Object.values(item.rankingCount).slice(0, props.ruleset?.numPlayers).join('|')}
                   </span>
+                  {item.totalChombo && item.totalChombo > 0 ? (
+                    <span className="text-warning text-xs">©: {item.totalChombo}</span>
+                  ) : (
+                    <></>
+                  )}
                 </div>
               </TableCell>
-              <TableCell className="text-right">{item.totalChombo}</TableCell>
               <TableCell className="w-max-[32px]">
                 <Icon
                   icon="mdi:chart-box"
+                  aria-label="View player stats"
                   className="w-7 h-7"
                   color="green"
                   onClick={() => {
